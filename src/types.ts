@@ -47,6 +47,7 @@ export interface DevGhostConfig {
   fixDeps?: boolean;
   deps?: boolean;
   yes?: boolean;
+  quiet?: boolean;
   interactive?: boolean;
   ci?: boolean;
   dryRun?: boolean;

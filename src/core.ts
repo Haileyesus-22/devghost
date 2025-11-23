@@ -17,7 +17,10 @@ export async function analyze(config: DevGhostConfig = {}): Promise<AnalysisResu
   // Read package.json
   const packageJson = readPackageJson(projectRoot);
   if (!packageJson) {
-    throw new Error('Could not read package.json');
+    throw new Error(
+      'Could not read package.json. Make sure you are in a Node.js project directory.\n' +
+      'Run this command from your project root (where package.json is located).'
+    );
   }
   
   // Get all source files
@@ -36,6 +39,11 @@ export async function analyze(config: DevGhostConfig = {}): Promise<AnalysisResu
   ];
   
   const files = allFiles.filter(f => !matchesIgnorePattern(f, ignorePatterns));
+  
+  // Show progress for large projects
+  if (!config.quiet && !config.ci && files.length > 50) {
+    console.log(`Analyzing ${files.length} files...`);
+  }
   
   // Run analyzers in parallel
   const [unusedImports, unusedFiles, unusedDependencies] = await Promise.all([

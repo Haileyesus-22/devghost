@@ -30,6 +30,7 @@ program
   .option('--deps','Include dependencies when using --fix')
   .option('--dry-run','Preview fixes without applying (use with --fix-deps)')
   .option('-y, --yes', 'skip confirmation prompts (auto-confirm)')
+  .option('-q, --quiet', 'Minimal output (errors and summary only)')
   .action(async (targetPath: string, options) => {
     try {
       // Change to target directory
@@ -45,6 +46,7 @@ program
         ci: options.ci || false,
         dryRun: options.dryRun || false,
         yes: options.yes || false,
+        quiet: options.quiet || false,
       };
       
       // Load config file if specified
@@ -64,7 +66,7 @@ program
       }
       
       // Run analysis
-      if (!config.ci) {
+      if (!config.ci && !config.quiet) {
         info('Scanning project...');
       }
       
@@ -101,10 +103,10 @@ program
       // Handle auto-fix
       if (config.fix && results.unusedImports.length > 0) {
         if (config.dryRun) {
-          info('DRY RUN MODE - No files will be modified');
+          if (!config.quiet) info('DRY RUN MODE - No files will be modified');
           console.log(getFixPreview(results.unusedImports));
         } else {
-          warning(`About to remove ${results.unusedImports.length} unused imports`);
+          if (!config.quiet) warning(`About to remove ${results.unusedImports.length} unused imports`);
           
           const fixResults = await fixUnusedImports(results.unusedImports, {
             dryRun: false,
@@ -128,13 +130,13 @@ program
       
       if (shouldFixDeps && results.unusedDependencies.length > 0) {
         if (config.dryRun) {
-          info('DRY RUN MODE - No dependencies will be removed');
-          warning(`Would remove ${results.unusedDependencies.length} unused dependencies:`);
+          if (!config.quiet) info('DRY RUN MODE - No dependencies will be removed');
+          if (!config.quiet) warning(`Would remove ${results.unusedDependencies.length} unused dependencies:`);
           results.unusedDependencies.forEach(dep => {
             console.log(`  - ${dep.name}`);
           });
         } else {
-          warning(`About to remove ${results.unusedDependencies.length} unused dependencies:`);
+          if (!config.quiet) warning(`About to remove ${results.unusedDependencies.length} unused dependencies:`);
           
           // Show the list of dependencies to be removed
           console.log('');
@@ -157,6 +159,11 @@ program
           return;
         }
          }
+          
+          if (!config.quiet) {
+            info('Removing dependencies (this may take a moment)...');
+          }
+          
           const projectRoot = process.cwd();
           const depResults = await removeDependencies(
             results.unusedDependencies.map(d => d.name),
