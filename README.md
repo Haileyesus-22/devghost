@@ -57,6 +57,9 @@ devghost --interactive
 # Skip confirmations (perfect for CI/CD)
 devghost --fix-deps --yes
 
+# Minimal output (perfect for CI/CD)
+devghost --quiet
+
 # CI mode (exits with code 1 if issues found)
 devghost --ci
 
@@ -257,6 +260,7 @@ devghost --fix-deps            # then confirm
 | `--dry-run` | Preview fixes without applying |
 | `--interactive` | Review each issue interactively (imports + dependencies) |
 | `-y, --yes` | Skip confirmation prompts (auto-confirm) |
+| `-q, --quiet` | Minimal output (errors and summary only) |
 | `--ci` | CI mode (minimal output, exit code 1 if issues found) |
 | `--config <path>` | Path to config file |
 | `--include-dev` | Include devDependencies in analysis |
