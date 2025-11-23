@@ -10,10 +10,11 @@ DevGhost is a powerful CLI tool that analyzes your TypeScript/JavaScript project
 ## ✨ Features
 
 - 🔍 **Smart Detection** - Uses TypeScript Compiler API for accurate analysis
-- 🔧 **Auto-Fix** - Automatically remove unused imports with `--fix`
+- 🔧 **Auto-Fix** - Automatically remove unused imports AND dependencies
 - 🎯 **Interactive Mode** - Review and fix issues one by one
+- 📦 **Dependency Cleanup** - Safely remove unused npm packages
 - 📊 **Impact Analysis** - See how much KB/LOC you can save
-- 🚀 **CI/CD Ready** - Perfect for build pipelines
+- 🚀 **CI/CD Ready** - Perfect for build pipelines with `--yes` flag
 - 🎨 **Beautiful Output** - Color-coded, easy-to-read reports
 - ⚡ **Fast** - Analyzes large projects in seconds
 
@@ -41,11 +42,20 @@ devghost ./src
 # Auto-fix unused imports
 devghost --fix
 
-# Preview fixes without applying
-devghost --fix --dry-run
+# Auto-fix unused dependencies
+devghost --fix-deps
 
-# Interactive mode
+# Fix both imports AND dependencies
+devghost --fix --deps
+
+# Preview fixes without applying
+devghost --fix-deps --dry-run
+
+# Interactive mode (review each issue)
 devghost --interactive
+
+# Skip confirmations (perfect for CI/CD)
+devghost --fix-deps --yes
 
 # CI mode (exits with code 1 if issues found)
 devghost --ci
@@ -92,6 +102,7 @@ Summary: 6 issues found
 
 ### Auto-Fix Mode
 
+**Fix Unused Imports:**
 ```bash
 # Remove all unused imports automatically
 devghost --fix
@@ -100,13 +111,39 @@ devghost --fix
 devghost --fix --dry-run
 ```
 
+**Fix Unused Dependencies (v0.2+):**
+```bash
+# Remove unused dependencies
+devghost --fix-deps
+
+# Preview dependencies to be removed
+devghost --fix-deps --dry-run
+
+# Skip confirmation prompt (for automation)
+devghost --fix-deps --yes
+```
+
+**Fix Everything:**
+```bash
+# Remove both unused imports AND dependencies
+devghost --fix --deps
+
+# With dry-run
+devghost --fix --deps --dry-run
+
+# Skip all confirmations
+devghost --fix --deps --yes
+```
+
 ### Interactive Mode
 
 ```bash
 devghost --interactive
 ```
 
-Review each unused import and decide what to do:
+Review each unused import and dependency individually:
+
+**Unused Imports:**
 ```
 src/utils/helper.ts:15
   import { unusedFunction } from './other';
@@ -116,6 +153,19 @@ What do you want to do?
   Skip this one
   Skip all remaining
   Cancel
+```
+
+**Unused Dependencies (v0.2+):**
+```
+📦 lodash
+   Type: dependency
+   Size: 1379.31 KB
+
+What do you want to do?
+❯ ✓ Remove this dependency
+  ⊗ Skip this one
+  ⊗ Skip all remaining
+  ✕ Cancel
 ```
 
 ### CI/CD Integration
@@ -167,22 +217,33 @@ import { willUseThisLater } from './future';
 
 ### Clean Up Before Release
 ```bash
-devghost --fix
+# Remove all unused code and dependencies
+devghost --fix --deps --yes
 ```
 
 ### Code Review
 ```bash
+# Review each issue interactively
 devghost --interactive
 ```
 
 ### CI/CD Quality Gate
 ```bash
+# Fail build if issues found
 devghost --ci
+
+# Auto-fix in CI pipeline (be careful!)
+devghost --fix --deps --yes
 ```
 
 ### Dependency Audit
 ```bash
+# Generate detailed JSON report
 devghost --include-dev --json > dead-code-report.json
+
+# Clean up unused dependencies safely
+devghost --fix-deps --dry-run  # preview first
+devghost --fix-deps            # then confirm
 ```
 
 ## 🛠️ CLI Options
@@ -191,8 +252,11 @@ devghost --include-dev --json > dead-code-report.json
 |--------|-------------|
 | `--json` | Output results as JSON |
 | `--fix` | Automatically remove unused imports |
-| `--dry-run` | Preview fixes without applying (use with `--fix`) |
-| `--interactive` | Review each issue interactively |
+| `--fix-deps` | Automatically remove unused dependencies |
+| `--deps` | Include dependencies when using `--fix` |
+| `--dry-run` | Preview fixes without applying |
+| `--interactive` | Review each issue interactively (imports + dependencies) |
+| `-y, --yes` | Skip confirmation prompts (auto-confirm) |
 | `--ci` | CI mode (minimal output, exit code 1 if issues found) |
 | `--config <path>` | Path to config file |
 | `--include-dev` | Include devDependencies in analysis |
@@ -201,28 +265,35 @@ devghost --include-dev --json > dead-code-report.json
 
 ## 🗺️ Roadmap
 
-### v0.1 - MVP ✅ (Current)
+### v0.1 - MVP ✅
 - ✅ Detect unused imports
 - ✅ Detect unused files
 - ✅ Detect unused dependencies
-- ✅ Auto-fix mode
-- ✅ Interactive mode
+- ✅ Auto-fix mode for imports
+- ✅ Interactive mode for imports
 - ✅ CI/CD integration
 
-### v0.2 - Deep Code Analysis
-- [ ] **Auto-fix unused dependencies** (safely run `npm uninstall`)
+### v0.2 - Dependency Management ✅ (Current)
+- ✅ **Auto-fix unused dependencies** (safely run `npm uninstall`)
+- ✅ **Interactive mode for dependencies**
+- ✅ **Confirmation prompts with preview**
+- ✅ **`--yes` flag for automation**
+- ✅ **Combined mode** (`--fix --deps`)
+- ✅ **Package manager detection** (npm/yarn/pnpm)
+
+### v0.3 - Deep Code Analysis
 - [ ] Detect unused functions
 - [ ] Detect unused variables
 - [ ] Detect unused exports
 - [ ] Detect dead code paths
 
-### v0.3 - Package Health Check
+### v0.4 - Package Health Check
 - [ ] Check for outdated dependencies
 - [ ] Check for deprecated packages
 - [ ] Check for unmaintained packages
 - [ ] Security vulnerability check
 
-### v0.4 - Advanced UI
+### v0.5 - Advanced UI
 - [ ] HTML report generation
 - [ ] VSCode extension
 - [ ] Git integration (`--since`, `--uncommitted`)

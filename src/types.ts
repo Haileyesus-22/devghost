@@ -44,6 +44,9 @@ export interface DevGhostConfig {
   entry?: string[];
   includeDev?: boolean;
   fix?: boolean;
+  fixDeps?: boolean;
+  deps?: boolean;
+  yes?: boolean;
   interactive?: boolean;
   ci?: boolean;
   dryRun?: boolean;
