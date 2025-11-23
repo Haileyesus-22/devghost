@@ -11,10 +11,12 @@ import * as path from 'path';
 
 const program = new Command();
 
+const packageJson = require('../../package.json');
+
 program
   .name('devghost')
   .description('👻 Find dead code, dead imports, and dead dependencies')
-  .version('0.1.0')
+  .version(packageJson.version)
   .argument('[path]', 'Path to analyze', process.cwd())
   .option('--json', 'Output results as JSON')
   .option('--fix', 'Automatically remove unused imports')
