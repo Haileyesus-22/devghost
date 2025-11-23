@@ -1,0 +1,19 @@
+{
+  "ignore": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/__tests__/**",
+    "**/__mocks__/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.next/**",
+    "**/bin/**"
+  ],
+  "entry": [
+    "src/cli/index.ts"
+  ],
+  "includeDev": false
+}

@@ -1,0 +1,56 @@
+{
+  "name": "devghost",
+  "version": "0.1.0",
+  "description": "👻 Find dead code, dead imports, and dead dependencies before they haunt your project",
+  "main": "dist/index.js",
+  "bin": {
+    "devghost": "./bin/devghost.js"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node dist/cli/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "dead-code",
+    "unused-imports",
+    "unused-dependencies",
+    "code-analysis",
+    "typescript",
+    "javascript",
+    "static-analysis",
+    "linter"
+  ],
+  "author": "Haileyesus",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Haileyesus-22/devghost.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Haileyesus-22/devghost/issues"
+  },
+  "homepage": "https://github.com/Haileyesus-22/devghost#readme",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^11.1.0",
+    "glob": "^10.3.10",
+    "inquirer": "^8.2.6",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/inquirer": "^8.2.10",
+    "@types/node": "^20.10.6"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
