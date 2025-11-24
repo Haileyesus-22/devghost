@@ -34,3 +34,4 @@ yarn-error.log*
 *.devghost-backup
 ARCHITECTURE.md
 IMPLEMENTATION_GUIDE*.md
+CHANGELOG*.md

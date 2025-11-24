@@ -1,20 +1,20 @@
-import { UnusedImport, UnusedFunction, FixResult } from '../types';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import * as ts from 'typescript';
+import type { FixResult, UnusedFunction, UnusedImport } from '../types';
 
 /**
  * Group unused imports by file for efficient processing
  */
 function groupByFile(unusedImports: UnusedImport[]): Map<string, UnusedImport[]> {
   const grouped = new Map<string, UnusedImport[]>();
-  
+
   for (const imp of unusedImports) {
     if (!grouped.has(imp.file)) {
       grouped.set(imp.file, []);
     }
-    grouped.get(imp.file)!.push(imp);
+    grouped.get(imp.file)?.push(imp);
   }
-  
+
   return grouped;
 }
 /**
@@ -24,29 +24,32 @@ function fixFileImports(filePath: string, unusedImports: UnusedImport[]): FixRes
   try {
     const content = fs.readFileSync(filePath, 'utf-8');
     const lines = content.split('\n');
-    
+
     // Sort by line number descending so we can remove from bottom to top
     // This prevents line number shifts
     const sortedImports = [...unusedImports].sort((a, b) => b.line - a.line);
-    
+
     let linesRemoved = 0;
-    
+
     for (const imp of sortedImports) {
-      if (imp.line >= 0 && imp.line < lines.length) {
+      // Line numbers from analysis are 1-indexed, array is 0-indexed
+      const lineIndex = imp.line - 1;
+
+      if (lineIndex >= 0 && lineIndex < lines.length) {
         // Check if this is the entire import statement
-        const line = lines[imp.line];
-        
+        const line = lines[lineIndex];
+
         // Simple heuristic: if the line is an import statement, remove it
         if (line.trim().startsWith('import ')) {
-          lines.splice(imp.line, 1);
+          lines.splice(lineIndex, 1);
           linesRemoved++;
         }
       }
     }
-    
+
     // Write the fixed content back
     fs.writeFileSync(filePath, lines.join('\n'), 'utf-8');
-    
+
     return {
       file: filePath,
       linesRemoved,
@@ -83,10 +86,10 @@ export async function fixUnusedImports(
 ): Promise<FixResult[]> {
   const { dryRun = false, createBackup: shouldBackup = false } = options;
   const results: FixResult[] = [];
-  
+
   // Group by file
   const grouped = groupByFile(unusedImports);
-  
+
   for (const [file, imports] of grouped.entries()) {
     if (dryRun) {
       // In dry-run mode, just report what would be done
@@ -100,7 +103,7 @@ export async function fixUnusedImports(
       if (shouldBackup) {
         try {
           createBackup(file);
-        } catch (error) {
+        } catch (_error) {
           results.push({
             file,
             linesRemoved: 0,
@@ -110,13 +113,13 @@ export async function fixUnusedImports(
           continue;
         }
       }
-      
+
       // Fix the file
       const result = fixFileImports(file, imports);
       results.push(result);
     }
   }
-  
+
   return results;
 }
 
@@ -126,14 +129,14 @@ export async function fixUnusedImports(
 export function getFixPreview(unusedImports: UnusedImport[]): string {
   const grouped = groupByFile(unusedImports);
   let preview = '';
-  
+
   for (const [file, imports] of grouped.entries()) {
     preview += `\n${file}:\n`;
     for (const imp of imports) {
       preview += `  - Line ${imp.line + 1}: ${imp.entireLine.trim()}\n`;
     }
   }
-  
+
   return preview;
 }
 /**
@@ -142,27 +145,27 @@ export function getFixPreview(unusedImports: UnusedImport[]): string {
 function fixFileFunctions(filePath: string, unusedFunctions: UnusedFunction[]): FixResult {
   try {
     const content = fs.readFileSync(filePath, 'utf-8');
-    const sourceFile = ts.createSourceFile(
-      filePath,
-      content,
-      ts.ScriptTarget.Latest,
-      true
-    );
+    const sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true);
 
     // Find nodes to remove
-    const nodesToRemove: { start: number, end: number }[] = [];
-    
+    const nodesToRemove: { start: number; end: number }[] = [];
+
     function visit(node: ts.Node) {
       // Check if this node corresponds to one of our unused functions
       for (const func of unusedFunctions) {
-        const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-        
+        const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+
         // Match by line number (approximate) and name
         if (line === func.line) {
           if (
             (ts.isFunctionDeclaration(node) && node.name?.text === func.functionName) ||
-            (ts.isVariableStatement(node) && node.declarationList.declarations.some(d => ts.isIdentifier(d.name) && d.name.text === func.functionName)) ||
-            (ts.isMethodDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === func.functionName)
+            (ts.isVariableStatement(node) &&
+              node.declarationList.declarations.some(
+                (d) => ts.isIdentifier(d.name) && d.name.text === func.functionName
+              )) ||
+            (ts.isMethodDeclaration(node) &&
+              ts.isIdentifier(node.name) &&
+              node.name.text === func.functionName)
           ) {
             nodesToRemove.push({ start: node.getFullStart(), end: node.getEnd() });
           }
@@ -170,19 +173,19 @@ function fixFileFunctions(filePath: string, unusedFunctions: UnusedFunction[]): 
       }
       ts.forEachChild(node, visit);
     }
-    
+
     visit(sourceFile);
-    
+
     // Sort by start position descending to remove from bottom up
     nodesToRemove.sort((a, b) => b.start - a.start);
-    
+
     let newContent = content;
     for (const range of nodesToRemove) {
       newContent = newContent.substring(0, range.start) + newContent.substring(range.end);
     }
-    
+
     fs.writeFileSync(filePath, newContent, 'utf-8');
-    
+
     return {
       file: filePath,
       linesRemoved: nodesToRemove.length, // Approximation
@@ -210,16 +213,16 @@ export async function fixUnusedFunctions(
 ): Promise<FixResult[]> {
   const { dryRun = false, createBackup: shouldBackup = false } = options;
   const results: FixResult[] = [];
-  
+
   // Group by file
   const grouped = new Map<string, UnusedFunction[]>();
   for (const func of unusedFunctions) {
     if (!grouped.has(func.file)) {
       grouped.set(func.file, []);
     }
-    grouped.get(func.file)!.push(func);
+    grouped.get(func.file)?.push(func);
   }
-  
+
   for (const [file, functions] of grouped.entries()) {
     if (dryRun) {
       results.push({
@@ -231,7 +234,7 @@ export async function fixUnusedFunctions(
       if (shouldBackup) {
         try {
           createBackup(file);
-        } catch (error) {
+        } catch (_error) {
           results.push({
             file,
             linesRemoved: 0,
@@ -241,11 +244,11 @@ export async function fixUnusedFunctions(
           continue;
         }
       }
-      
+
       const result = fixFileFunctions(file, functions);
       results.push(result);
     }
   }
-  
+
   return results;
 }

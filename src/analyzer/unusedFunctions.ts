@@ -1,8 +1,8 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import * as ts from 'typescript';
-import { UnusedFunction } from '../types';
-import { parseFile, getLineAndColumn, getLineText } from '../utils/tsparser';
+import type { UnusedFunction } from '../types';
 import { hasIgnoreComment } from '../utils/fs';
+import { getLineAndColumn, getLineText, parseFile } from '../utils/tsparser';
 
 interface FunctionInfo {
   name: string;
@@ -37,57 +37,68 @@ export async function analyzeUnusedFunctions(files: string[]): Promise<UnusedFun
     function visit(node: ts.Node) {
       // 1. Detect Function Declarations
       if (ts.isFunctionDeclaration(node) && node.name) {
-        const isExported = node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword) || false;
-        const { line, column } = getLineAndColumn(sourceFile!, node.name.getStart());
-        
+        const isExported =
+          node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) || false;
+        if (!sourceFile) return;
+        const { line, column } = getLineAndColumn(sourceFile, node.name.getStart());
+
         if (!hasIgnoreComment(fileContent, line)) {
+          functions.push({
+            name: node.name.text,
+            start: node.getStart(),
+            end: node.getEnd(),
+            line,
+            column,
+            type: 'function',
+            isExported,
+            entireLine: getLineText(sourceFile, line),
+          });
+        }
+      }
+
+      // 2. Detect Arrow Functions / Function Expressions in Variables
+      if (
+        ts.isVariableDeclaration(node) &&
+        node.name &&
+        ts.isIdentifier(node.name) &&
+        node.initializer
+      ) {
+        if (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer)) {
+          // Check if exported (need to check parent VariableStatement)
+          let isExported = false;
+          let current: ts.Node = node.parent;
+          while (current) {
+            if (ts.isVariableStatement(current)) {
+              isExported =
+                current.modifiers?.some(
+                  (m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ExportKeyword
+                ) || false;
+              break;
+            }
+            current = current.parent;
+          }
+
+          if (!sourceFile) return;
+          const { line, column } = getLineAndColumn(sourceFile, node.name.getStart());
+          if (!hasIgnoreComment(fileContent, line)) {
             functions.push({
               name: node.name.text,
               start: node.getStart(),
               end: node.getEnd(),
               line,
               column,
-              type: 'function',
+              type: 'arrow',
               isExported,
-              entireLine: getLineText(sourceFile!, line)
+              entireLine: getLineText(sourceFile, line),
             });
-        }
-      }
-      
-      // 2. Detect Arrow Functions / Function Expressions in Variables
-      if (ts.isVariableDeclaration(node) && node.name && ts.isIdentifier(node.name) && node.initializer) {
-        if (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer)) {
-           // Check if exported (need to check parent VariableStatement)
-           let isExported = false;
-           let current: ts.Node = node.parent;
-           while (current) {
-             if (ts.isVariableStatement(current)) {
-               isExported = current.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ExportKeyword) || false;
-               break;
-             }
-             current = current.parent;
-           }
-
-           const { line, column } = getLineAndColumn(sourceFile!, node.name.getStart());
-           if (!hasIgnoreComment(fileContent, line)) {
-             functions.push({
-               name: node.name.text,
-               start: node.getStart(),
-               end: node.getEnd(),
-               line,
-               column,
-               type: 'arrow',
-               isExported,
-               entireLine: getLineText(sourceFile!, line)
-             });
-           }
+          }
         }
       }
 
       // 3. Detect Usages (Identifiers)
       if (ts.isIdentifier(node)) {
         if (isUsage(node)) {
-           usages.push({ name: node.text, pos: node.getStart() });
+          usages.push({ name: node.text, pos: node.getStart() });
         }
       }
 
@@ -101,9 +112,8 @@ export async function analyzeUnusedFunctions(files: string[]): Promise<UnusedFun
       if (func.isExported) continue; // Skip exported functions (handled by unusedExports)
 
       // Check for usages outside the function itself (handles simple recursion)
-      const isUsed = usages.some(u => 
-        u.name === func.name && 
-        (u.pos < func.start || u.pos > func.end)
+      const isUsed = usages.some(
+        (u) => u.name === func.name && (u.pos < func.start || u.pos > func.end)
       );
 
       if (!isUsed) {
@@ -114,7 +124,7 @@ export async function analyzeUnusedFunctions(files: string[]): Promise<UnusedFun
           functionName: func.name,
           functionType: func.type,
           isExported: false,
-          entireLine: func.entireLine
+          entireLine: func.entireLine,
         });
       }
     }
@@ -128,7 +138,7 @@ export async function analyzeUnusedFunctions(files: string[]): Promise<UnusedFun
  */
 function isUsage(node: ts.Identifier): boolean {
   const parent = node.parent;
-  
+
   // Declarations
   if (ts.isFunctionDeclaration(parent) && parent.name === node) return false;
   if (ts.isVariableDeclaration(parent) && parent.name === node) return false;
@@ -138,20 +148,22 @@ function isUsage(node: ts.Identifier): boolean {
   if (ts.isEnumDeclaration(parent) && parent.name === node) return false;
   if (ts.isParameter(parent) && parent.name === node) return false;
   if (ts.isMethodDeclaration(parent) && parent.name === node) return false;
-  
+
   // Property access: obj.prop -> prop is not a usage of variable 'prop'
   if (ts.isPropertyAccessExpression(parent) && parent.name === node) return false;
-  
+
   // Property assignment: { prop: val } -> prop is not a usage
   if (ts.isPropertyAssignment(parent) && parent.name === node) return false;
-  
+
   // Import/Export specifiers
-  if (ts.isImportSpecifier(parent) && (parent.propertyName === node || parent.name === node)) return false;
-  if (ts.isExportSpecifier(parent) && (parent.propertyName === node || parent.name === node)) return false;
-  
+  if (ts.isImportSpecifier(parent) && (parent.propertyName === node || parent.name === node))
+    return false;
+  if (ts.isExportSpecifier(parent) && (parent.propertyName === node || parent.name === node))
+    return false;
+
   // Binding elements (destructuring): const { prop } = obj
   if (ts.isBindingElement(parent) && parent.propertyName === node) return false; // { prop: alias } -> prop is property name
   if (ts.isBindingElement(parent) && parent.name === node) return false; // { prop } -> prop is declaration
-  
+
   return true;
 }

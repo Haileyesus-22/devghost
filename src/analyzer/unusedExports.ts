@@ -1,9 +1,9 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import * as ts from 'typescript';
-import { UnusedExport } from '../types';
-import { parseFile, getLineAndColumn, getLineText } from '../utils/tsparser';
+import type { UnusedExport } from '../types';
 import { hasIgnoreComment } from '../utils/fs';
+import { getLineAndColumn, getLineText, parseFile } from '../utils/tsparser';
 
 interface ExportInfo {
   file: string;
@@ -30,7 +30,7 @@ function resolveImportPath(importerFile: string, importPath: string): string | n
 
   // Try different extensions
   const extensions = ['.ts', '.tsx', '.js', '.jsx'];
-  
+
   // First, try with direct extensions
   for (const ext of extensions) {
     const testPath = resolvedPath + ext;
@@ -73,24 +73,25 @@ function extractExportsFromFile(filePath: string): ExportInfo[] {
     // Handle: export const bar = ...
     // Handle: export class Baz {}
     if (
-      (ts.isFunctionDeclaration(node) || 
-       ts.isClassDeclaration(node) || 
-       ts.isVariableStatement(node) ||
-       ts.isInterfaceDeclaration(node) ||
-       ts.isTypeAliasDeclaration(node) ||
-       ts.isEnumDeclaration(node)) &&
-      node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
+      (ts.isFunctionDeclaration(node) ||
+        ts.isClassDeclaration(node) ||
+        ts.isVariableStatement(node) ||
+        ts.isInterfaceDeclaration(node) ||
+        ts.isTypeAliasDeclaration(node) ||
+        ts.isEnumDeclaration(node)) &&
+      node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
     ) {
-      const hasDefault = node.modifiers?.some(m => m.kind === ts.SyntaxKind.DefaultKeyword);
-      let exportType: 'named' | 'default' | 'namespace' = hasDefault ? 'default' : 'named';
+      const hasDefault = node.modifiers?.some((m) => m.kind === ts.SyntaxKind.DefaultKeyword);
+      const exportType: 'named' | 'default' | 'namespace' = hasDefault ? 'default' : 'named';
       let exportName = '';
 
       if (ts.isVariableStatement(node)) {
         // export const foo = ..., bar = ...
-        node.declarationList.declarations.forEach(decl => {
+        node.declarationList.declarations.forEach((decl) => {
           if (ts.isIdentifier(decl.name)) {
-            const { line, column } = getLineAndColumn(sourceFile!, decl.name.getStart());
-            
+            if (!sourceFile) return;
+            const { line, column } = getLineAndColumn(sourceFile, decl.name.getStart());
+
             if (!hasIgnoreComment(fileContent, line)) {
               exports.push({
                 file: filePath,
@@ -98,7 +99,7 @@ function extractExportsFromFile(filePath: string): ExportInfo[] {
                 line,
                 column,
                 exportType,
-                entireLine: getLineText(sourceFile!, line),
+                entireLine: getLineText(sourceFile, line),
               });
             }
           }
@@ -111,8 +112,9 @@ function extractExportsFromFile(filePath: string): ExportInfo[] {
       }
 
       if (exportName) {
-        const { line, column } = getLineAndColumn(sourceFile!, node.getStart());
-        
+        if (!sourceFile) return;
+        const { line, column } = getLineAndColumn(sourceFile, node.getStart());
+
         if (!hasIgnoreComment(fileContent, line)) {
           exports.push({
             file: filePath,
@@ -120,7 +122,7 @@ function extractExportsFromFile(filePath: string): ExportInfo[] {
             line,
             column,
             exportType,
-            entireLine: getLineText(sourceFile!, line),
+            entireLine: getLineText(sourceFile, line),
           });
         }
       }
@@ -128,18 +130,15 @@ function extractExportsFromFile(filePath: string): ExportInfo[] {
 
     // Handle: export { x, y, z }
     // Handle: export { x as y }
+    // Handle: export { x as y } from './other' (re-exports)
     if (ts.isExportDeclaration(node)) {
-      // Skip re-exports: export { x } from './other'
-      if (node.moduleSpecifier) {
-        ts.forEachChild(node, visit);
-        return;
-      }
-
       if (node.exportClause && ts.isNamedExports(node.exportClause)) {
-        node.exportClause.elements.forEach(element => {
-          const exportName = element.name.text;
-          const { line, column } = getLineAndColumn(sourceFile!, element.getStart());
-          
+        node.exportClause.elements.forEach((element) => {
+          // For re-exports or direct exports, we care about the exported name (after 'as')
+          const exportName = element.name.text; // This is the name being exported
+          if (!sourceFile) return;
+          const { line, column } = getLineAndColumn(sourceFile, element.getStart());
+
           if (!hasIgnoreComment(fileContent, line)) {
             exports.push({
               file: filePath,
@@ -147,7 +146,7 @@ function extractExportsFromFile(filePath: string): ExportInfo[] {
               line,
               column,
               exportType: 'named',
-              entireLine: getLineText(sourceFile!, line),
+              entireLine: getLineText(sourceFile, line),
             });
           }
         });
@@ -156,8 +155,9 @@ function extractExportsFromFile(filePath: string): ExportInfo[] {
 
     // Handle: export default ...
     if (ts.isExportAssignment(node)) {
-      const { line, column } = getLineAndColumn(sourceFile!, node.getStart());
-      
+      if (!sourceFile) return;
+      const { line, column } = getLineAndColumn(sourceFile, node.getStart());
+
       if (!hasIgnoreComment(fileContent, line)) {
         exports.push({
           file: filePath,
@@ -165,7 +165,7 @@ function extractExportsFromFile(filePath: string): ExportInfo[] {
           line,
           column,
           exportType: 'default',
-          entireLine: getLineText(sourceFile!, line),
+          entireLine: getLineText(sourceFile, line),
         });
       }
     }
@@ -192,10 +192,10 @@ function extractImportsFromFile(filePath: string): Map<string, Set<string>> {
   function visit(node: ts.Node) {
     if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
       const importPath = node.moduleSpecifier.text;
-      
+
       // Resolve the import path to actual file
       const resolvedPath = resolveImportPath(filePath, importPath);
-      
+
       if (!resolvedPath) {
         return; // Skip external packages
       }
@@ -204,25 +204,26 @@ function extractImportsFromFile(filePath: string): Map<string, Set<string>> {
         imports.set(resolvedPath, new Set());
       }
 
-      const importedNames = imports.get(resolvedPath)!;
+      const importedNames = imports.get(resolvedPath);
+      if (!importedNames) return;
 
       if (node.importClause) {
         // Default import: import Foo from './bar'
-        if (node.importClause.name) {
+        if (node.importClause.name && importedNames) {
           importedNames.add('default');
         }
 
         // Named imports: import { x, y } from './bar'
         if (node.importClause.namedBindings) {
           if (ts.isNamedImports(node.importClause.namedBindings)) {
-            node.importClause.namedBindings.elements.forEach(element => {
+            node.importClause.namedBindings.elements.forEach((element) => {
               // Use the original name being imported (before 'as')
               const importedName = element.propertyName?.text || element.name.text;
-              importedNames.add(importedName);
+              if (importedNames) importedNames.add(importedName);
             });
           } else if (ts.isNamespaceImport(node.importClause.namedBindings)) {
             // import * as foo from './bar' - imports EVERYTHING
-            importedNames.add('*');
+            if (importedNames) importedNames.add('*');
           }
         }
       }
@@ -241,7 +242,7 @@ function extractImportsFromFile(filePath: string): Map<string, Set<string>> {
 export async function analyzeUnusedExports(files: string[]): Promise<UnusedExport[]> {
   // Step 1: Extract all exports from all files
   const allExports: ExportInfo[] = [];
-  
+
   for (const file of files) {
     const fileExports = extractExportsFromFile(file);
     allExports.push(...fileExports);
@@ -253,15 +254,15 @@ export async function analyzeUnusedExports(files: string[]): Promise<UnusedExpor
 
   for (const file of files) {
     const fileImports = extractImportsFromFile(file);
-    
+
     fileImports.forEach((importedNames, targetFile) => {
       if (!importMap.has(targetFile)) {
         importMap.set(targetFile, new Set());
       }
-      
+
       // Merge imported names
-      importedNames.forEach(name => {
-        importMap.get(targetFile)!.add(name);
+      importedNames.forEach((name) => {
+        importMap.get(targetFile)?.add(name);
       });
     });
   }
@@ -271,7 +272,7 @@ export async function analyzeUnusedExports(files: string[]): Promise<UnusedExpor
 
   for (const exportInfo of allExports) {
     const importedNames = importMap.get(exportInfo.file);
-    
+
     // If no imports from this file at all, or this specific export isn't imported
     if (!importedNames) {
       // No one imports from this file at all

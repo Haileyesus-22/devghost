@@ -1,6 +1,6 @@
 {
   "name": "devghost",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "👻 Find dead code, dead imports, and dead dependencies before they haunt your project",
   "main": "dist/index.js",
   "bin": {
@@ -15,8 +15,16 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "node dist/cli/index.js",
-    "prepublishOnly": "npm run build"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "biome check src",
+    "lint:fix": "biome check --write src",
+    "format": "biome format --write src tests",
+    "format:check": "biome format src tests",
+    "check": "biome check src tests",
+    "check:fix": "biome check --write src tests",
+    "prepublishOnly": "npm run build && npm run check && npm run test"
   },
   "keywords": [
     "dead-code",
@@ -46,9 +54,13 @@
     "typescript": "^5.3.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.7",
     "@types/glob": "^8.1.0",
     "@types/inquirer": "^8.2.10",
-    "@types/node": "^20.10.6"
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.10.6",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5"
   },
   "engines": {
     "node": ">=18.0.0"

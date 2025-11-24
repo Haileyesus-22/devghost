@@ -4,6 +4,8 @@ export interface AnalysisResult {
   unusedDependencies: UnusedDependency[];
   unusedExports: UnusedExport[];
   unusedFunctions: UnusedFunction[];
+  unusedTypes: UnusedType[];
+  unusedVariables: UnusedVariable[];
   stats: AnalysisStats;
 }
 
@@ -17,12 +19,12 @@ export interface UnusedImport {
 }
 
 export interface UnusedExport {
-    file: string;
-    line: number;
-    column: number;
-    exportName: string;
-    exportType: 'named' | 'default' |'namespace';
-    entireLine: string; // For auto-fix
+  file: string;
+  line: number;
+  column: number;
+  exportName: string;
+  exportType: 'named' | 'default' | 'namespace';
+  entireLine: string; // For auto-fix
 }
 
 export interface UnusedFunction {
@@ -32,6 +34,26 @@ export interface UnusedFunction {
   functionName: string;
   functionType: 'function' | 'arrow' | 'method';
   isExported: boolean;
+  entireLine: string;
+}
+
+export interface UnusedType {
+  file: string;
+  line: number;
+  column: number;
+  typeName: string;
+  typeKind: 'interface' | 'type' | 'enum' | 'class';
+  isExported: boolean;
+  entireLine: string;
+}
+
+export interface UnusedVariable {
+  file: string;
+  line: number;
+  column: number;
+  variableName: string;
+  variableType: 'const' | 'let' | 'var' | 'parameter';
+  scopeType: 'function' | 'block' | 'module';
   entireLine: string;
 }
 

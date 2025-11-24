@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { Command } from 'commander';
 import inquirer from 'inquirer';
 import { analyze } from '../core';
-import { fixUnusedImports, fixUnusedFunctions, getFixPreview } from '../fixer';
+import { fixUnusedFunctions, fixUnusedImports, getFixPreview } from '../fixer';
 import { removeDependencies } from '../fixer/dependencyFixer';
-import { formatResults, error, success, info, warning } from '../utils/logger';
-import { DevGhostConfig } from '../types';
-import * as fs from 'fs';
-import * as path from 'path';
+import type { AnalysisResult, DevGhostConfig, UnusedImport } from '../types';
+import { error, formatResults, info, success, warning } from '../utils/logger';
 
 const program = new Command();
 
@@ -28,15 +28,15 @@ program
   .option('--include-dev', 'Include devDependencies in analysis')
   .option('--fix-deps', 'Automatically remove unused dependencies')
   .option('--fix-functions', 'Automatically remove unused functions')
-  .option('--deps','Include dependencies when using --fix')
-  .option('--dry-run','Preview fixes without applying (use with --fix-deps)')
+  .option('--deps', 'Include dependencies when using --fix')
+  .option('--dry-run', 'Preview fixes without applying (use with --fix-deps)')
   .option('-y, --yes', 'skip confirmation prompts (auto-confirm)')
   .option('-q, --quiet', 'Minimal output (errors and summary only)')
   .action(async (targetPath: string, options) => {
     try {
       // Change to target directory
       process.chdir(targetPath);
-      
+
       // Load config
       let config: DevGhostConfig = {
         includeDev: options.includeDev || false,
@@ -50,7 +50,7 @@ program
         yes: options.yes || false,
         quiet: options.quiet || false,
       };
-      
+
       // Load config file if specified
       if (options.config) {
         const configPath = path.resolve(options.config);
@@ -66,22 +66,22 @@ program
           config = { ...config, ...fileConfig };
         }
       }
-      
+
       // Run analysis
       if (!config.ci && !config.quiet) {
         info('Scanning project...');
       }
-      
+
       const results = await analyze(config);
-      
+
       // Handle CI mode
       if (config.ci) {
-        const totalIssues = 
-          results.unusedImports.length + 
-          results.unusedFiles.length + 
+        const totalIssues =
+          results.unusedImports.length +
+          results.unusedFiles.length +
           results.unusedDependencies.length +
           results.unusedExports.length;
-        
+
         if (totalIssues > 0) {
           console.log(`Found ${totalIssues} issues`);
           process.exit(1);
@@ -90,137 +90,146 @@ program
           process.exit(0);
         }
       }
-      
+
       // Handle JSON output
       if (options.json) {
         console.log(JSON.stringify(results, null, 2));
         return;
       }
-      
+
       // Handle interactive mode
-      if (config.interactive && (results.unusedImports.length > 0 || results.unusedDependencies.length > 0)) {
+      if (
+        config.interactive &&
+        (results.unusedImports.length > 0 || results.unusedDependencies.length > 0)
+      ) {
         await handleInteractiveMode(results);
         return;
       }
-      
+
       // Handle auto-fix
       if (config.fix && results.unusedImports.length > 0) {
         if (config.dryRun) {
           if (!config.quiet) info('DRY RUN MODE - No files will be modified');
           console.log(getFixPreview(results.unusedImports));
         } else {
-          if (!config.quiet) warning(`About to remove ${results.unusedImports.length} unused imports`);
-          
+          if (!config.quiet)
+            warning(`About to remove ${results.unusedImports.length} unused imports`);
+
           const fixResults = await fixUnusedImports(results.unusedImports, {
             dryRun: false,
             createBackup: false,
           });
-          
-          const successful = fixResults.filter(r => r.success).length;
-          const failed = fixResults.filter(r => !r.success).length;
-          
+
+          const successful = fixResults.filter((r) => r.success).length;
+          const failed = fixResults.filter((r) => !r.success).length;
+
           success(`Fixed ${successful} files`);
           if (failed > 0) {
             error(`Failed to fix ${failed} files`);
           }
-          
         }
         return;
       }
-      
+
       // Handle dependency fixing
       const shouldFixDeps = config.fixDeps || (config.fix && config.deps);
-      
+
       if (shouldFixDeps && results.unusedDependencies.length > 0) {
         if (config.dryRun) {
           if (!config.quiet) info('DRY RUN MODE - No dependencies will be removed');
-          if (!config.quiet) warning(`Would remove ${results.unusedDependencies.length} unused dependencies:`);
-          results.unusedDependencies.forEach(dep => {
+          if (!config.quiet)
+            warning(`Would remove ${results.unusedDependencies.length} unused dependencies:`);
+          results.unusedDependencies.forEach((dep) => {
             console.log(`  - ${dep.name}`);
           });
         } else {
-          if (!config.quiet) warning(`About to remove ${results.unusedDependencies.length} unused dependencies:`);
-          
+          if (!config.quiet)
+            warning(`About to remove ${results.unusedDependencies.length} unused dependencies:`);
+
           // Show the list of dependencies to be removed
           console.log('');
-          results.unusedDependencies.forEach(dep => {
+          results.unusedDependencies.forEach((dep) => {
             console.log(`  📦 ${dep.name} (${dep.type}) - ${(dep.size / 1024).toFixed(2)} KB`);
           });
           console.log('');
-          
-         if(!config.yes){
-          const { confirm } = await inquirer.prompt([
-            {
+
+          if (!config.yes) {
+            const { confirm } = await inquirer.prompt([
+              {
                 type: 'confirm',
                 name: 'confirm',
                 message: `Are you sure you want to remove these ${results.unusedDependencies.length} dependencies?`,
                 default: false,
-            }
-        ]);
-        if(!confirm){
-          info('Cancelled');
-          return;
-        }
-         }
-          
-          if (!config.quiet) {
-            info('Removing dependencies (this may take a moment)...');
-          }
-          
-          const projectRoot = process.cwd();
-          const depResults = await removeDependencies(
-            results.unusedDependencies.map(d => d.name),
-            projectRoot,
-            config.includeDev || false,
-            false
-          );
-          
-          const successful = depResults.filter(r => r.success).length;
-          const failed = depResults.filter(r => !r.success);
-          
-          success(`Removed ${successful} dependencies`);
-          if (failed.length > 0) {
-            error(`Failed to remove ${failed.length} dependencies:`);
-            failed.forEach(f => console.log(`  - ${f.packageName}: ${f.error}`));
-          }
-        }
-        return;
-      }
-      
-      // Handle unused functions fixing
-      if (config.fixFunctions && results.unusedFunctions.length > 0) {
-        if (config.dryRun) {
-          if (!config.quiet) info('DRY RUN MODE - No functions will be removed');
-          if (!config.quiet) warning(`Would remove ${results.unusedFunctions.length} unused functions:`);
-          results.unusedFunctions.forEach(func => {
-            console.log(`  - ${func.functionName} (${func.file}:${func.line + 1})`);
-          });
-        } else {
-          if (!config.quiet) warning(`About to remove ${results.unusedFunctions.length} unused functions`);
-          
-          if (!config.yes) {
-             const { confirm } = await inquirer.prompt([
-              {
-                  type: 'confirm',
-                  name: 'confirm',
-                  message: `Are you sure you want to remove these ${results.unusedFunctions.length} functions?`,
-                  default: false,
-              }
+              },
             ]);
             if (!confirm) {
               info('Cancelled');
               return;
             }
           }
-          
+
+          if (!config.quiet) {
+            info('Removing dependencies (this may take a moment)...');
+          }
+
+          const projectRoot = process.cwd();
+          const depResults = await removeDependencies(
+            results.unusedDependencies.map((d) => d.name),
+            projectRoot,
+            config.includeDev || false,
+            false
+          );
+
+          const successful = depResults.filter((r) => r.success).length;
+          const failed = depResults.filter((r) => !r.success);
+
+          success(`Removed ${successful} dependencies`);
+          if (failed.length > 0) {
+            error(`Failed to remove ${failed.length} dependencies:`);
+            failed.forEach((f) => {
+              console.log(`  - ${f.packageName}: ${f.error}`);
+            });
+          }
+        }
+        return;
+      }
+
+      // Handle unused functions fixing
+      if (config.fixFunctions && results.unusedFunctions.length > 0) {
+        if (config.dryRun) {
+          if (!config.quiet) info('DRY RUN MODE - No functions will be removed');
+          if (!config.quiet)
+            warning(`Would remove ${results.unusedFunctions.length} unused functions:`);
+          results.unusedFunctions.forEach((func) => {
+            console.log(`  - ${func.functionName} (${func.file}:${func.line + 1})`);
+          });
+        } else {
+          if (!config.quiet)
+            warning(`About to remove ${results.unusedFunctions.length} unused functions`);
+
+          if (!config.yes) {
+            const { confirm } = await inquirer.prompt([
+              {
+                type: 'confirm',
+                name: 'confirm',
+                message: `Are you sure you want to remove these ${results.unusedFunctions.length} functions?`,
+                default: false,
+              },
+            ]);
+            if (!confirm) {
+              info('Cancelled');
+              return;
+            }
+          }
+
           const fixResults = await fixUnusedFunctions(results.unusedFunctions, {
             dryRun: false,
             createBackup: false, // TODO: Add backup option
           });
-          
-          const successful = fixResults.filter(r => r.success).length;
-          const failed = fixResults.filter(r => !r.success).length;
-          
+
+          const successful = fixResults.filter((r) => r.success).length;
+          const failed = fixResults.filter((r) => !r.success).length;
+
           success(`Removed ${successful} functions`);
           if (failed > 0) {
             error(`Failed to remove ${failed} functions`);
@@ -228,21 +237,20 @@ program
         }
         return;
       }
-      
+
       // Display results
       console.log(formatResults(results, true));
-      
+
       // Exit with error code if issues found (for CI integration)
-      const totalIssues = 
-        results.unusedImports.length + 
-        results.unusedFiles.length + 
+      const totalIssues =
+        results.unusedImports.length +
+        results.unusedFiles.length +
         results.unusedDependencies.length +
         results.unusedExports.length;
-      
+
       if (totalIssues > 0) {
         process.exit(0); // Don't exit with error in normal mode, only in CI mode
       }
-      
     } catch (err) {
       error(`Error: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
@@ -252,25 +260,25 @@ program
 /**
  * Handle interactive mode
  */
-async function handleInteractiveMode(results: any) {
+async function handleInteractiveMode(results: AnalysisResult) {
   const unusedImports = results.unusedImports || [];
   const unusedDependencies = results.unusedDependencies || [];
-  
+
   // Handle unused imports
   if (unusedImports.length > 0) {
     info(`Found ${unusedImports.length} unused imports. Let's review them...`);
-    
-    const toFix: any[] = [];
+
+    const toFix: UnusedImport[] = [];
     let skipAll = false;
-    
+
     for (const imp of unusedImports) {
       if (skipAll) {
         break;
       }
-      
+
       console.log(`\n${imp.file}:${imp.line + 1}`);
       console.log(`  ${imp.entireLine.trim()}`);
-      
+
       const { action } = await inquirer.prompt([
         {
           type: 'list',
@@ -284,7 +292,7 @@ async function handleInteractiveMode(results: any) {
           ],
         },
       ]);
-      
+
       if (action === 'fix') {
         toFix.push(imp);
       } else if (action === 'skip-all') {
@@ -294,33 +302,33 @@ async function handleInteractiveMode(results: any) {
         return;
       }
     }
-    
+
     if (toFix.length > 0) {
       info(`Fixing ${toFix.length} imports...`);
       const fixResults = await fixUnusedImports(toFix);
-      const successful = fixResults.filter(r => r.success).length;
+      const successful = fixResults.filter((r) => r.success).length;
       success(`Fixed ${successful} imports`);
     } else {
       info('No import changes made');
     }
   }
-  
+
   // Handle unused dependencies
   if (unusedDependencies.length > 0) {
     info(`\nFound ${unusedDependencies.length} unused dependencies. Let's review them...`);
-    
+
     const depsToFix: string[] = [];
     let skipAllDeps = false;
-    
+
     for (const dep of unusedDependencies) {
       if (skipAllDeps) {
         break;
       }
-      
+
       console.log(`\n📦 ${dep.name}`);
       console.log(`   Type: ${dep.type}`);
       console.log(`   Size: ${(dep.size / 1024).toFixed(2)} KB`);
-      
+
       const { action } = await inquirer.prompt([
         {
           type: 'list',
@@ -334,7 +342,7 @@ async function handleInteractiveMode(results: any) {
           ],
         },
       ]);
-      
+
       if (action === 'fix') {
         depsToFix.push(dep.name);
       } else if (action === 'skip-all') {
@@ -344,16 +352,11 @@ async function handleInteractiveMode(results: any) {
         return;
       }
     }
-    
+
     if (depsToFix.length > 0) {
       info(`\nRemoving ${depsToFix.length} dependencies...`);
-      const depResults = await removeDependencies(
-        depsToFix,
-        process.cwd(),
-        false,
-        false
-      );
-      const successful = depResults.filter(r => r.success).length;
+      const depResults = await removeDependencies(depsToFix, process.cwd(), false, false);
+      const successful = depResults.filter((r) => r.success).length;
       success(`Removed ${successful} dependencies`);
     } else {
       info('No dependency changes made');

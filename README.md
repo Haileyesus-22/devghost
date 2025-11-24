@@ -17,6 +17,7 @@ DevGhost is a powerful CLI tool that analyzes your TypeScript/JavaScript project
 - 📊 **Impact Analysis** - See how much KB/LOC you can save
 - 🚀 **CI/CD Ready** - Perfect for build pipelines with `--yes` flag
 - 🎨 **Beautiful Output** - Color-coded, easy-to-read reports
+- 🧩 **Unused Variables Detection** - Detect and report unused local variables and function parameters
 - ⚡ **Fast** - Analyzes large projects in seconds
 
 ## 📦 Installation
@@ -295,7 +296,7 @@ devghost --fix-deps            # then confirm
 
 ### v0.3 - Deep Code Analysis 🚧 (In Progress)
 - ✅ **Detect unused functions**
-- [ ] Detect unused variables
+- ✅ **Detect unused variables**
 - ✅ **Detect unused exports**
 - [ ] Detect dead code paths
 
