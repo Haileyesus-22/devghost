@@ -3,6 +3,7 @@ import { findProjectRoot, getAllFiles, readPackageJson, matchesIgnorePattern } f
 import { analyzeImports } from './analyzer/imports';
 import { analyzeFiles } from './analyzer/files';
 import { analyzeDependencies } from './analyzer/deps';
+import { analyzeUnusedExports } from './analyzer/unusedExports';
 
 /**
  * Main analysis function that orchestrates all analyzers
@@ -46,10 +47,11 @@ export async function analyze(config: DevGhostConfig = {}): Promise<AnalysisResu
   }
   
   // Run analyzers in parallel
-  const [unusedImports, unusedFiles, unusedDependencies] = await Promise.all([
+  const [unusedImports, unusedFiles, unusedDependencies, unusedExports] = await Promise.all([
     analyzeImports(files),
     analyzeFiles(files, config.entry),
     analyzeDependencies(files, packageJson, projectRoot, config.includeDev),
+    analyzeUnusedExports(files),
   ]);
   
   // Calculate statistics
@@ -70,6 +72,7 @@ export async function analyze(config: DevGhostConfig = {}): Promise<AnalysisResu
     unusedImports,
     unusedFiles,
     unusedDependencies,
+    unusedExports,
     stats,
   };
 }

@@ -81,7 +81,8 @@ export function formatResults(results: AnalysisResult, showStats: boolean = true
   const totalIssues = 
     results.unusedImports.length + 
     results.unusedFiles.length + 
-    results.unusedDependencies.length;
+    results.unusedDependencies.length +
+    results.unusedExports.length;
   
   if (totalIssues === 0) {
     output += chalk.green('✓ No dead code found! Your project is clean. 🎉\n');
@@ -99,6 +100,21 @@ export function formatResults(results: AnalysisResult, showStats: boolean = true
     
     if (results.unusedImports.length > 10) {
       output += chalk.gray(`  ... and ${results.unusedImports.length - 10} more\n`);
+    }
+    output += '\n';
+  }
+  
+  // Unused exports
+  if (results.unusedExports.length > 0) {
+    output += chalk.red(`❌ Found ${results.unusedExports.length} unused export${results.unusedExports.length === 1 ? '' : 's'}:\n`);
+    for (const exp of results.unusedExports.slice(0, 10)) {
+      output += chalk.gray(`  - ${exp.file}:${exp.line + 1} - `) + 
+                chalk.yellow(`'${exp.exportName}'`) + 
+                chalk.gray(` (${exp.exportType})\n`);
+    }
+    
+    if (results.unusedExports.length > 10) {
+      output += chalk.gray(`  ... and ${results.unusedExports.length - 10} more\n`);
     }
     output += '\n';
   }

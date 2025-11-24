@@ -32,3 +32,5 @@ yarn-error.log*
 
 # DevGhost specific
 *.devghost-backup
+ARCHITECTURE.md
+IMPLEMENTATION_GUIDE*.md

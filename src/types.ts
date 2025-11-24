@@ -2,6 +2,7 @@ export interface AnalysisResult {
   unusedImports: UnusedImport[];
   unusedFiles: UnusedFile[];
   unusedDependencies: UnusedDependency[];
+  unusedExports: UnusedExport[];
   stats: AnalysisStats;
 }
 
@@ -12,6 +13,15 @@ export interface UnusedImport {
   importName: string;
   source: string;
   entireLine: string; // For auto-fix
+}
+
+export interface UnusedExport {
+    file: string;
+    line: number;
+    column: number;
+    exportName: string;
+    exportType: 'named' | 'default' |'namespace';
+    entireLine: string; // For auto-fix
 }
 
 export interface UnusedFile {

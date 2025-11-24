@@ -77,7 +77,8 @@ program
         const totalIssues = 
           results.unusedImports.length + 
           results.unusedFiles.length + 
-          results.unusedDependencies.length;
+          results.unusedDependencies.length +
+          results.unusedExports.length;
         
         if (totalIssues > 0) {
           console.log(`Found ${totalIssues} issues`);
@@ -191,7 +192,8 @@ program
       const totalIssues = 
         results.unusedImports.length + 
         results.unusedFiles.length + 
-        results.unusedDependencies.length;
+        results.unusedDependencies.length +
+        results.unusedExports.length;
       
       if (totalIssues > 0) {
         process.exit(0); // Don't exit with error in normal mode, only in CI mode

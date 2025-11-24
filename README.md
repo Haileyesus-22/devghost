@@ -4,6 +4,7 @@
 
 DevGhost is a powerful CLI tool that analyzes your TypeScript/JavaScript projects to detect:
 - 💀 Unused imports
+- 💀 Unused exports
 - 💀 Orphaned files
 - 💀 Unused npm dependencies
 
@@ -85,6 +86,10 @@ Output:
 ❌ Found 3 unused imports:
   - src/utils/helper.ts:5 - 'unusedFunction' from './other'
   - src/components/Button.tsx:2 - 'React' (type-only)
+
+❌ Found 2 unused exports:
+  - src/utils/helper.ts:12 - 'helperFunction' (named)
+  - src/api/client.ts:8 - 'ApiClient' (named)
 
 ❌ Found 2 unused files:
   - src/legacy/oldParser.ts (15 KB, 450 lines)
@@ -285,10 +290,10 @@ devghost --fix-deps            # then confirm
 - ✅ **Combined mode** (`--fix --deps`)
 - ✅ **Package manager detection** (npm/yarn/pnpm)
 
-### v0.3 - Deep Code Analysis
+### v0.3 - Deep Code Analysis 🚧 (In Progress)
 - [ ] Detect unused functions
 - [ ] Detect unused variables
-- [ ] Detect unused exports
+- ✅ **Detect unused exports**
 - [ ] Detect dead code paths
 
 ### v0.4 - Package Health Check
