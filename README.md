@@ -141,6 +141,9 @@ devghost --fix --deps --dry-run
 
 # Skip all confirmations
 devghost --fix --deps --yes
+
+# Fix unused functions (v0.3.1+)
+devghost --fix-functions
 ```
 
 ### Interactive Mode
@@ -291,7 +294,7 @@ devghost --fix-deps            # then confirm
 - ✅ **Package manager detection** (npm/yarn/pnpm)
 
 ### v0.3 - Deep Code Analysis 🚧 (In Progress)
-- [ ] Detect unused functions
+- ✅ **Detect unused functions**
 - [ ] Detect unused variables
 - ✅ **Detect unused exports**
 - [ ] Detect dead code paths

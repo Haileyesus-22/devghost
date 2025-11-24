@@ -4,6 +4,7 @@ import { analyzeImports } from './analyzer/imports';
 import { analyzeFiles } from './analyzer/files';
 import { analyzeDependencies } from './analyzer/deps';
 import { analyzeUnusedExports } from './analyzer/unusedExports';
+import { analyzeUnusedFunctions } from './analyzer/unusedFunctions';
 
 /**
  * Main analysis function that orchestrates all analyzers
@@ -47,11 +48,12 @@ export async function analyze(config: DevGhostConfig = {}): Promise<AnalysisResu
   }
   
   // Run analyzers in parallel
-  const [unusedImports, unusedFiles, unusedDependencies, unusedExports] = await Promise.all([
+  const [unusedImports, unusedFiles, unusedDependencies, unusedExports, unusedFunctions] = await Promise.all([
     analyzeImports(files),
     analyzeFiles(files, config.entry),
     analyzeDependencies(files, packageJson, projectRoot, config.includeDev),
     analyzeUnusedExports(files),
+    analyzeUnusedFunctions(files),
   ]);
   
   // Calculate statistics
@@ -61,7 +63,7 @@ export async function analyze(config: DevGhostConfig = {}): Promise<AnalysisResu
     totalDependencies: Object.keys(packageJson.dependencies || {}).length +
                        Object.keys(packageJson.devDependencies || {}).length,
     potentialSavings: {
-      lines: unusedFiles.reduce((sum, f) => sum + f.lines, 0) + unusedImports.length,
+      lines: unusedFiles.reduce((sum, f) => sum + f.lines, 0) + unusedImports.length + unusedFunctions.length,
       bytes: unusedFiles.reduce((sum, f) => sum + f.size, 0),
       dependencies: unusedDependencies.length,
       dependenciesSize: unusedDependencies.reduce((sum, d) => sum + d.size, 0),
@@ -73,6 +75,7 @@ export async function analyze(config: DevGhostConfig = {}): Promise<AnalysisResu
     unusedFiles,
     unusedDependencies,
     unusedExports,
+    unusedFunctions,
     stats,
   };
 }

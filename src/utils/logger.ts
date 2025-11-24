@@ -82,7 +82,8 @@ export function formatResults(results: AnalysisResult, showStats: boolean = true
     results.unusedImports.length + 
     results.unusedFiles.length + 
     results.unusedDependencies.length +
-    results.unusedExports.length;
+    results.unusedExports.length +
+    results.unusedFunctions.length;
   
   if (totalIssues === 0) {
     output += chalk.green('✓ No dead code found! Your project is clean. 🎉\n');
@@ -115,6 +116,21 @@ export function formatResults(results: AnalysisResult, showStats: boolean = true
     
     if (results.unusedExports.length > 10) {
       output += chalk.gray(`  ... and ${results.unusedExports.length - 10} more\n`);
+    }
+    output += '\n';
+  }
+
+  // Unused functions
+  if (results.unusedFunctions.length > 0) {
+    output += chalk.red(`❌ Found ${results.unusedFunctions.length} unused function${results.unusedFunctions.length === 1 ? '' : 's'}:\n`);
+    for (const func of results.unusedFunctions.slice(0, 10)) {
+      output += chalk.gray(`  - ${func.file}:${func.line + 1} - `) + 
+                chalk.yellow(`'${func.functionName}'`) + 
+                chalk.gray(` (${func.functionType})\n`);
+    }
+    
+    if (results.unusedFunctions.length > 10) {
+      output += chalk.gray(`  ... and ${results.unusedFunctions.length - 10} more\n`);
     }
     output += '\n';
   }

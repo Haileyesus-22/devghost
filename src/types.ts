@@ -3,6 +3,7 @@ export interface AnalysisResult {
   unusedFiles: UnusedFile[];
   unusedDependencies: UnusedDependency[];
   unusedExports: UnusedExport[];
+  unusedFunctions: UnusedFunction[];
   stats: AnalysisStats;
 }
 
@@ -22,6 +23,16 @@ export interface UnusedExport {
     exportName: string;
     exportType: 'named' | 'default' |'namespace';
     entireLine: string; // For auto-fix
+}
+
+export interface UnusedFunction {
+  file: string;
+  line: number;
+  column: number;
+  functionName: string;
+  functionType: 'function' | 'arrow' | 'method';
+  isExported: boolean;
+  entireLine: string;
 }
 
 export interface UnusedFile {
@@ -55,6 +66,7 @@ export interface DevGhostConfig {
   includeDev?: boolean;
   fix?: boolean;
   fixDeps?: boolean;
+  fixFunctions?: boolean;
   deps?: boolean;
   yes?: boolean;
   quiet?: boolean;

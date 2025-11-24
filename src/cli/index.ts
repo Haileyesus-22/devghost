@@ -3,7 +3,7 @@
 import { Command } from 'commander';
 import inquirer from 'inquirer';
 import { analyze } from '../core';
-import { fixUnusedImports, getFixPreview } from '../fixer';
+import { fixUnusedImports, fixUnusedFunctions, getFixPreview } from '../fixer';
 import { removeDependencies } from '../fixer/dependencyFixer';
 import { formatResults, error, success, info, warning } from '../utils/logger';
 import { DevGhostConfig } from '../types';
@@ -27,6 +27,7 @@ program
   .option('--config <path>', 'Path to config file')
   .option('--include-dev', 'Include devDependencies in analysis')
   .option('--fix-deps', 'Automatically remove unused dependencies')
+  .option('--fix-functions', 'Automatically remove unused functions')
   .option('--deps','Include dependencies when using --fix')
   .option('--dry-run','Preview fixes without applying (use with --fix-deps)')
   .option('-y, --yes', 'skip confirmation prompts (auto-confirm)')
@@ -41,6 +42,7 @@ program
         includeDev: options.includeDev || false,
         fix: options.fix || false,
         fixDeps: options.fixDeps || false,
+        fixFunctions: options.fixFunctions || false,
         deps: options.deps || false,
         interactive: options.interactive || false,
         ci: options.ci || false,
@@ -180,6 +182,48 @@ program
           if (failed.length > 0) {
             error(`Failed to remove ${failed.length} dependencies:`);
             failed.forEach(f => console.log(`  - ${f.packageName}: ${f.error}`));
+          }
+        }
+        return;
+      }
+      
+      // Handle unused functions fixing
+      if (config.fixFunctions && results.unusedFunctions.length > 0) {
+        if (config.dryRun) {
+          if (!config.quiet) info('DRY RUN MODE - No functions will be removed');
+          if (!config.quiet) warning(`Would remove ${results.unusedFunctions.length} unused functions:`);
+          results.unusedFunctions.forEach(func => {
+            console.log(`  - ${func.functionName} (${func.file}:${func.line + 1})`);
+          });
+        } else {
+          if (!config.quiet) warning(`About to remove ${results.unusedFunctions.length} unused functions`);
+          
+          if (!config.yes) {
+             const { confirm } = await inquirer.prompt([
+              {
+                  type: 'confirm',
+                  name: 'confirm',
+                  message: `Are you sure you want to remove these ${results.unusedFunctions.length} functions?`,
+                  default: false,
+              }
+            ]);
+            if (!confirm) {
+              info('Cancelled');
+              return;
+            }
+          }
+          
+          const fixResults = await fixUnusedFunctions(results.unusedFunctions, {
+            dryRun: false,
+            createBackup: false, // TODO: Add backup option
+          });
+          
+          const successful = fixResults.filter(r => r.success).length;
+          const failed = fixResults.filter(r => !r.success).length;
+          
+          success(`Removed ${successful} functions`);
+          if (failed > 0) {
+            error(`Failed to remove ${failed} functions`);
           }
         }
         return;
