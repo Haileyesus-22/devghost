@@ -25,10 +25,16 @@ export function activate(context: vscode.ExtensionContext) {
     () => fixCurrentFile()
   );
 
+  const fixWorkspaceCommand = vscode.commands.registerCommand(
+    'devghost.fixWorkspace',
+    () => fixWorkspace()
+  );
+
   context.subscriptions.push(
     analyzeFileCommand,
     analyzeWorkspaceCommand,
     fixFileCommand,
+    fixWorkspaceCommand,
     diagnosticCollection
   );
 
@@ -36,8 +42,6 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument(analyzeDocument),
     vscode.workspace.onDidSaveTextDocument(analyzeDocument)
-    // Removed onDidChangeTextDocument to prevent line number mismatches
-    // between the saved file (what DevGhost analyzes) and editor buffer
   );
 
   // Analyze all currently open files
@@ -53,7 +57,7 @@ async function analyzeDocument(document: vscode.TextDocument) {
   if (!validLanguages.includes(document.languageId)) return;
 
   // Skip unsaved files (they don't exist on disk yet)
-  if (document.isUntitled || document.isDirty && !document.fileName) {
+  if (document.isUntitled || (document.isDirty && !document.fileName)) {
     return;
   }
 
@@ -82,6 +86,9 @@ async function analyzeDocument(document: vscode.TextDocument) {
       diagnostics.push(diagnostic);
     }
 
+    /* 
+    // Disabled for now to focus on unused imports
+    
     // Analyze unused variables
     const unusedVars = analyzeUnusedVariables([document.fileName]);
     
@@ -152,6 +159,7 @@ async function analyzeDocument(document: vscode.TextDocument) {
       diagnostic.code = 'unused-type';
       diagnostics.push(diagnostic);
     }
+    */
 
     diagnosticCollection.set(document.uri, diagnostics);
   } catch (error) {
@@ -182,16 +190,58 @@ async function analyzeCurrentFile() {
 }
 
 async function analyzeWorkspace() {
-  vscode.window.showInformationMessage('👻 Analyzing workspace...');
+  // Exclude common build/generated directories
+  const excludePattern = '{**/node_modules/**,**/.next/**,**/dist/**,**/build/**,**/out/**,**/.nuxt/**,**/.output/**,**/coverage/**}';
+  const files = await vscode.workspace.findFiles('**/*.{ts,tsx,js,jsx}', excludePattern);
   
-  const files = await vscode.workspace.findFiles('**/*.{ts,tsx,js,jsx}', '**/node_modules/**');
-  
-  for (const file of files) {
-    const document = await vscode.workspace.openTextDocument(file);
-    await analyzeDocument(document);
+  // Additional filter to exclude files in ignored paths
+  // We rely mainly on the glob pattern above, but do a quick check for node_modules just in case
+  const filteredFiles = files.filter(file => {
+    const path = file.fsPath;
+    return !path.includes('node_modules');
+  });
+
+  if (filteredFiles.length === 0) {
+    vscode.window.showWarningMessage('No TypeScript/JavaScript files found to analyze');
+    return;
   }
 
-  vscode.window.showInformationMessage(`👻 Analyzed ${files.length} files!`);
+  // Show progress
+  await vscode.window.withProgress({
+    location: vscode.ProgressLocation.Notification,
+    title: '👻 DevGhost',
+    cancellable: false
+  }, async (progress) => {
+    progress.report({ message: `Analyzing ${filteredFiles.length} files...` });
+
+    // Process files in batches of 20 for optimal performance
+    const batchSize = 20;
+    for (let i = 0; i < filteredFiles.length; i += batchSize) {
+      const batch = filteredFiles.slice(i, i + batchSize);
+      
+      // Process batch in parallel
+      await Promise.all(
+        batch.map(async (file) => {
+          try {
+            const document = await vscode.workspace.openTextDocument(file);
+            await analyzeDocument(document);
+          } catch (error) {
+            console.error(`Error analyzing ${file.fsPath}:`, error);
+          }
+        })
+      );
+
+      // Update progress
+      const percentComplete = Math.round(((i + batch.length) / filteredFiles.length) * 100);
+      progress.report({ 
+        message: `Analyzed ${i + batch.length}/${filteredFiles.length} files (${percentComplete}%)` 
+      });
+    }
+
+    progress.report({ message: 'Complete!' });
+  });
+
+  vscode.window.showInformationMessage(`👻 Analysis complete! Scanned ${filteredFiles.length} files.`);
 }
 
 async function fixCurrentFile() {
@@ -230,6 +280,98 @@ async function fixCurrentFile() {
   await document.save();
   
   vscode.window.showInformationMessage(`👻 Fixed ${unusedImports.length} unused imports!`);
+}
+
+async function fixWorkspace() {
+  // Exclude common build/generated directories
+  const excludePattern = '{**/node_modules/**,**/.next/**,**/dist/**,**/build/**,**/out/**,**/.nuxt/**,**/.output/**,**/coverage/**}';
+  const files = await vscode.workspace.findFiles('**/*.{ts,tsx,js,jsx}', excludePattern);
+  
+  // Filter files
+  // We rely mainly on the glob pattern above, but do a quick check for node_modules just in case
+  const filteredFiles = files.filter(file => {
+    const path = file.fsPath;
+    return !path.includes('node_modules');
+  });
+
+  if (filteredFiles.length === 0) {
+    vscode.window.showWarningMessage('No TypeScript/JavaScript files found');
+    return;
+  }
+
+  let totalFixed = 0;
+  let filesFixed = 0;
+
+  await vscode.window.withProgress({
+    location: vscode.ProgressLocation.Notification,
+    title: '👻 DevGhost Auto-Fix',
+    cancellable: true
+  }, async (progress, token) => {
+    progress.report({ message: `Scanning ${filteredFiles.length} files...` });
+
+    // Process files sequentially to ensure reliability with VSCode API
+    // Concurrent applyEdit calls can fail or conflict
+    for (let i = 0; i < filteredFiles.length; i++) {
+      if (token.isCancellationRequested) break;
+
+      const file = filteredFiles[i];
+      try {
+        // 1. Open document to ensure we handle dirty state
+        const document = await vscode.workspace.openTextDocument(file);
+        
+        // 2. If dirty, save first so analyzeImports (which reads from disk) sees correct content
+        if (document.isDirty) {
+          await document.save();
+        }
+
+        // 3. Analyze imports
+        const unusedImports = await analyzeImports([file.fsPath]);
+        
+        if (unusedImports.length > 0) {
+          const edit = new vscode.WorkspaceEdit();
+          
+          // Sort by line number in reverse
+          unusedImports.sort((a, b) => b.line - a.line);
+          
+          for (const unusedImport of unusedImports) {
+            const range = new vscode.Range(
+              unusedImport.line - 1,
+              0,
+              unusedImport.line,
+              0
+            );
+            edit.delete(document.uri, range);
+          }
+          
+          // 4. Apply edits
+          const success = await vscode.workspace.applyEdit(edit);
+          
+          if (success) {
+            // 5. Save again to persist changes
+            await document.save();
+            totalFixed += unusedImports.length;
+            filesFixed++;
+          }
+        }
+      } catch (error) {
+        console.error(`Error fixing ${file.fsPath}:`, error);
+      }
+
+      // Update progress every 5 files or so to avoid UI thrashing
+      if (i % 5 === 0 || i === filteredFiles.length - 1) {
+        const percentComplete = Math.round(((i + 1) / filteredFiles.length) * 100);
+        progress.report({ 
+          message: `Fixed ${filesFixed} files (${totalFixed} imports removed) - ${percentComplete}%` 
+        });
+      }
+    }
+
+    progress.report({ message: 'Complete!' });
+  });
+
+  vscode.window.showInformationMessage(
+    `👻 Auto-fix complete! Fixed ${filesFixed} files, removed ${totalFixed} unused imports.`
+  );
 }
 
 export function deactivate() {

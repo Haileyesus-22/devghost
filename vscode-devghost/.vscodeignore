@@ -1,0 +1,12 @@
+# Build files
+src/
+tsconfig.json
+.gitignore
+
+# Dependencies (will be bundled)
+node_modules/
+
+# Development
+.vscode/
+*.ts
+*.map

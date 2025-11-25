@@ -1,57 +1,47 @@
 # 👻 DevGhost for VSCode
 
-Real-time dead code detection directly in your editor!
+**Hunt down dead code in real-time!** 🚫👻
 
-## Features
+DevGhost helps you keep your codebase clean by automatically detecting and removing unused imports and dead code directly within VSCode.
 
-- **🔍 Real-time Diagnostics** - See unused imports and variables as you type
-- **⚡ Quick Fixes** - Auto-remove unused imports with one click  
-- **🎨 Configurable Severity** - Error, Warning, or Information levels
-- **🚀 Workspace Analysis** - Scan entire projects instantly
-- **💾 Auto-fix on Save** - Optional automatic cleanup
+## ✨ Features
 
-## Commands
+- **🔍 Real-time Diagnostics**: See unused imports and variables highlighted as you type.
+- **⚡ Fix Entire Workspace**: Automatically remove unused imports across your **entire project** in one click!
+- **🚀 Blazing Fast**: Analyzes thousands of files in seconds using parallel processing.
+- **🧹 Quick Fixes**: Auto-remove unused imports from the current file instantly.
+- **🛡️ Safe & Reliable**: Smart filtering ensures `node_modules` and build folders are ignored.
 
-- `DevGhost: Analyze Current File` - Scan the active file
-- `DevGhost: Analyze Workspace` - Scan all TS/JS files
-- `DevGhost: Fix Current File` - Remove all unused imports
+## 🎮 Commands
 
-## Configuration
+Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`) and type `DevGhost`:
+
+- `DevGhost: Analyze Current File` - Scan the active file for dead code.
+- `DevGhost: Analyze Workspace` - Scan your entire project (10x faster in v0.1.5!).
+- `DevGhost: Fix Current File` - Remove unused imports from the active file.
+- `DevGhost: Fix Entire Workspace` - **(NEW)** Automatically remove unused imports from ALL files in your project.
+
+## ⚙️ Configuration
+
+Customize DevGhost in your VSCode settings (`settings.json`):
 
 ```json
 {
   "devghost.enable": true,
-  "devghost.severity": "Warning", // "Error" | "Warning" | "Information"
+  "devghost.severity": "Warning", // Options: "Error", "Warning", "Information"
   "devghost.autoFixOnSave": false
 }
 ```
 
-## Installation (Local Testing)
-
-1. Clone the repo
-2. `cd vscode-devghost`
-3. `npm install`
-4. `npm run compile`
-5. Press `F5` to launch Extension Development Host
-
-## Publishing
-
-```bash
-npm install -g @vscode/vsce
-vsce package
-vsce publish
-```
-
-## Requirements
+## 📦 Requirements
 
 - VSCode 1.85.0 or higher
-- DevGhost NPM package
+- A TypeScript or JavaScript project
 
-## Known Limitations
+## 🔧 Troubleshooting
 
-- Some dynamic imports may not be detected
-- Index file re-exports need manual review
+If analysis seems to ignore some files, ensure they are not in your `.gitignore` or standard build folders (`dist`, `out`, `build`).
 
-## License
+## 📄 License
 
 MIT © Haileyesus

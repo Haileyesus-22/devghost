@@ -2,7 +2,7 @@
   "name": "devghost-vscode",
   "displayName": "DevGhost",
   "description": "👻 Hunt down dead code in real-time",
-  "version": "0.1.0",
+  "version": "0.1.6",
   "publisher": "haileyesus",
   "icon": "icon.png",
   "engines": {
@@ -10,7 +10,7 @@
   },
   "categories": [
     "Linters",
-    "Formatters"
+    "Other"
   ],
   "keywords": [
     "dead code",
@@ -38,7 +38,11 @@
       },
       {
         "command": "devghost.fixFile",
-        "title": "DevGhost: Fix Current File"
+        "title": "DevGhost: Fix Current File (Unused Imports)"
+      },
+      {
+        "command": "devghost.fixWorkspace",
+        "title": "DevGhost: Fix Entire Workspace (Unused Imports)"
       }
     ],
     "configuration": {
@@ -69,9 +73,10 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run package",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "package": "node ./esbuild.js --production",
     "lint": "eslint src --ext ts"
   },
   "devDependencies": {
@@ -79,11 +84,12 @@
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "esbuild": "^0.27.0",
     "eslint": "^8.0.0",
     "typescript": "^5.3.0"
   },
   "dependencies": {
-    "devghost": "^0.3.4"
+    "devghost": "^0.3.7"
   },
   "repository": {
     "type": "git",
