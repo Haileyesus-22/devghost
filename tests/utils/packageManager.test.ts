@@ -1,10 +1,4 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import {
-  type PackageManager,
-  detectPackageManager,
-  getUninstallCommand,
-} from '../../src/utils/packageManager';
+import { detectPackageManager, getUninstallCommand } from '../../src/utils/packageManager';
 import { cleanupTempProject, createTempProject } from '../utils';
 
 describe('packageManager', () => {
