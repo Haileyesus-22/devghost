@@ -52,6 +52,44 @@ Most tools just **list** dead code. DevGhost **exorcises** it.
 - **⚡ Zero Config**: Works out of the box for most projects.
 
 ---
+
+## 📦 Installation
+
+### Quick Run (Recommended)
+Run it instantly without installing:
+```bash
+npx devghost
+```
+
+### Install Globally
+```bash
+npm install -g devghost
+```
+
+### Install as Dev Dependency
+```bash
+npm install -D devghost
+```
+
+---
+
+## 📖 Usage
+
+```bash
+# 👻 Basic scan (default)
+devghost
+
+# 🛡️ Interactive mode (approve every change)
+devghost --interactive
+
+# 🧹 Auto-fix unused imports
+devghost --fix
+
+# 📦 Auto-fix unused dependencies
+devghost --fix-deps
+
+# 🚀 CI mode (exit with error if issues found)
+devghost --ci
 ```
 
 ### Sample output
