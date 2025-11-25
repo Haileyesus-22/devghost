@@ -9,7 +9,7 @@
     <a href="https://github.com/Haileyesus-22/devghost/actions"><img src="https://img.shields.io/github/actions/workflow/status/Haileyesus-22/devghost/ci.yml?branch=main&logo=github" alt="CI status" /></a>
     <a href="https://github.com/Haileyesus-22/devghost"><img src="https://img.shields.io/github/stars/Haileyesus-22/devghost?style=social" alt="GitHub stars" /></a>
     <a href="https://github.com/Haileyesus-22/devghost/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/devghost" alt="license" /></a>
-    <a href="https://marketplace.visualstudio.com/items?itemName=haileyesus.devghost-vscode"><img src="https://img.shields.io/visual-studio-marketplace/v/haileyesus.devghost-vscode?style=flat&logo=visual-studio-code&label=VSCode" alt="VSCode Extension" /></a>
+    <a href="https://marketplace.visualstudio.com/items?itemName=haileyesus.devghost-vscode"><img src="https://img.shields.io/badge/VSCode-v0.1.6-blue?logo=visual-studio-code" alt="VSCode Extension" /></a>
   </p>
 </div>
 
