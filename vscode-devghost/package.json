@@ -1,0 +1,96 @@
+{
+  "name": "devghost-vscode",
+  "displayName": "DevGhost",
+  "description": "👻 Hunt down dead code in real-time",
+  "version": "0.1.0",
+  "publisher": "haileyesus",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Formatters"
+  ],
+  "keywords": [
+    "dead code",
+    "unused imports",
+    "typescript",
+    "javascript",
+    "code quality"
+  ],
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:javascript",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascriptreact"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "devghost.analyzeFile",
+        "title": "DevGhost: Analyze Current File"
+      },
+      {
+        "command": "devghost.analyzeWorkspace",
+        "title": "DevGhost: Analyze Entire Workspace"
+      },
+      {
+        "command": "devghost.fixFile",
+        "title": "DevGhost: Fix Current File"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "DevGhost",
+      "properties": {
+        "devghost.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable DevGhost diagnostics"
+        },
+        "devghost.severity": {
+          "type": "string",
+          "enum": [
+            "Error",
+            "Warning",
+            "Information"
+          ],
+          "default": "Warning",
+          "description": "Severity level for dead code diagnostics"
+        },
+        "devghost.autoFixOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically fix unused imports on save"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "devghost": "^0.3.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Haileyesus-22/devghost"
+  },
+  "bugs": {
+    "url": "https://github.com/Haileyesus-22/devghost/issues"
+  },
+  "homepage": "https://github.com/Haileyesus-22/devghost#readme"
+}
