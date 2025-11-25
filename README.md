@@ -20,10 +20,10 @@
 
 ---
 
-## 🎉 Latest Release (v0.3.7)
-> **🚨 CRITICAL BUGFIX**: If you're on v0.3.6, please upgrade immediately.
+## 🎉 Latest Release (v0.3.8)
 
-- 🐛 **FIXED**: Critical off-by-one bug in `--fix` that deleted wrong lines
+- ✨ **NEW**: VSCode Extension badge added to README
+- ✅ **VSCode Extension v0.1.6** – Fix Entire Workspace command
 - ✅ **74% Test Coverage** – 68 tests, all passing
 - ✅ **Unused Types Detection** – interfaces, type aliases, enums
 - ✅ **Unused Variables** – dead `const/let` and function parameters
