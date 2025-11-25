@@ -9,6 +9,7 @@
     <a href="https://github.com/Haileyesus-22/devghost/actions"><img src="https://img.shields.io/github/actions/workflow/status/Haileyesus-22/devghost/ci.yml?branch=main&logo=github" alt="CI status" /></a>
     <a href="https://github.com/Haileyesus-22/devghost"><img src="https://img.shields.io/github/stars/Haileyesus-22/devghost?style=social" alt="GitHub stars" /></a>
     <a href="https://github.com/Haileyesus-22/devghost/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/devghost" alt="license" /></a>
+    <a href="https://marketplace.visualstudio.com/items?itemName=haileyesus.devghost-vscode"><img src="https://img.shields.io/visual-studio-marketplace/v/haileyesus.devghost-vscode?style=flat&logo=visual-studio-code&label=VSCode" alt="VSCode Extension" /></a>
   </p>
 </div>
 
@@ -51,20 +52,6 @@ Most tools just **list** dead code. DevGhost **exorcises** it.
 - **🛡️ Safety First**: The interactive mode lets you approve every single deletion.
 - **🧹 True Cleanup**: We don't just find unused files; we remove unused *imports*, *variables*, and *types* inside your files.
 - **🧠 Deep Analysis**: Uses the TypeScript Compiler API for precision, not just regex.
-- **⚡ Zero Config**: Works out of the box for most projects.
-
----
-
-## 📦 Installation
-
-### Quick Run (Recommended)
-Run it instantly without installing:
-```bash
-npx devghost
-```
-
-### Install Globally
-```bash
 npm install -g devghost
 ```
 
