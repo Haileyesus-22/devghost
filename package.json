@@ -1,6 +1,6 @@
 {
   "name": "devghost",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "👻 Find dead code, dead imports, and dead dependencies before they haunt your project",
   "main": "dist/index.js",
   "bin": {
