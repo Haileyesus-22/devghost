@@ -19,12 +19,14 @@
 
 ---
 
-## 🎉 Latest Release (v0.3.5)
-- ✅ **74% Test Coverage** – 65 tests, all passing
+## 🎉 Latest Release (v0.3.7)
+> **🚨 CRITICAL BUGFIX**: If you're on v0.3.6, please upgrade immediately.
+
+- 🐛 **FIXED**: Critical off-by-one bug in `--fix` that deleted wrong lines
+- ✅ **74% Test Coverage** – 68 tests, all passing
 - ✅ **Unused Types Detection** – interfaces, type aliases, enums
 - ✅ **Unused Variables** – dead `const/let` and function parameters
 - ✅ **Enhanced Analyzers** – deps, files, exports, functions
-- ✅ **Bug Fixes** – package manager detection improvements
 
 ---
 

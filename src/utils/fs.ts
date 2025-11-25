@@ -110,13 +110,18 @@ export function getDirectorySize(dirPath: string): number {
 
 /**
  * Check if a file has a devghost-ignore comment
+ * @param fileContent - The file content as a string
+ * @param line - 1-indexed line number (line 1 = first line)
  */
 export function hasIgnoreComment(fileContent: string, line: number): boolean {
   const lines = fileContent.split('\n');
 
+  // Convert 1-indexed to 0-indexed for array access
+  const lineIndex = line - 1;
+
   // Check the line before
-  if (line > 0) {
-    const previousLine = lines[line - 1];
+  if (lineIndex > 0) {
+    const previousLine = lines[lineIndex - 1];
     if (previousLine?.includes('devghost-ignore-next-line')) {
       return true;
     }

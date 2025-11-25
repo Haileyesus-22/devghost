@@ -118,13 +118,15 @@ export function getLineText(sourceFile: ts.SourceFile, lineNumber: number): stri
 
 /**
  * Get line and column from a position in the source file
+ * Returns 1-indexed line numbers (line 1 = first line) for consistency
  */
 export function getLineAndColumn(
   sourceFile: ts.SourceFile,
   pos: number
 ): { line: number; column: number } {
   const { line, character } = sourceFile.getLineAndCharacterOfPosition(pos);
-  return { line, column: character };
+  // TypeScript returns 0-indexed line numbers, convert to 1-indexed
+  return { line: line + 1, column: character };
 }
 
 /**
