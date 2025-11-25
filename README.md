@@ -134,7 +134,7 @@ MIT © Haileyesus
 ---
 
 <div align="center">
-**Made with ❤️ (and ☕) by [Haileyesus](https://github.com/Haileyesus-22)**
+Made with ❤️ (and ☕) by [Haileyesus](https://github.com/Haileyesus-22)
 
 *Don’t let dead code haunt you.*
 </div>
