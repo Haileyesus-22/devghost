@@ -7,6 +7,7 @@ import inquirer from 'inquirer';
 import { analyze } from '../core';
 import { fixUnusedFunctions, fixUnusedImports, getFixPreview } from '../fixer';
 import { removeDependencies } from '../fixer/dependencyFixer';
+import { generateHtmlReport, openInBrowser } from '../reporter';
 import type { AnalysisResult, DevGhostConfig, UnusedImport } from '../types';
 import { error, formatResults, info, success, warning } from '../utils/logger';
 
@@ -32,6 +33,8 @@ program
   .option('--dry-run', 'Preview fixes without applying (use with --fix-deps)')
   .option('-y, --yes', 'skip confirmation prompts (auto-confirm)')
   .option('-q, --quiet', 'Minimal output (errors and summary only)')
+  .option('--report <format>', 'Generate report (html)')
+  .option('--output <path>', 'Custom output path for report')
   .action(async (targetPath: string, options) => {
     try {
       // Change to target directory
@@ -49,6 +52,8 @@ program
         dryRun: options.dryRun || false,
         yes: options.yes || false,
         quiet: options.quiet || false,
+        report: options.report as 'html' | 'json' | undefined,
+        output: options.output,
       };
 
       // Load config file if specified
@@ -235,6 +240,37 @@ program
             error(`Failed to remove ${failed} functions`);
           }
         }
+        return;
+      }
+
+      // Handle HTML report generation
+      if (config.report === 'html') {
+        const reportPath = await generateHtmlReport(results, config.output);
+        
+        if (!config.quiet) {
+          success(`HTML report generated: ${reportPath}`);
+        }
+
+        // Ask to open in browser
+        if (!config.quiet && !config.yes) {
+          const { shouldOpen } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'shouldOpen',
+              message: 'Open report in browser?',
+              default: true,
+            },
+          ]);
+
+          if (shouldOpen) {
+            openInBrowser(reportPath);
+            success('Report opened in browser');
+          }
+        } else if (config.yes) {
+          // Auto-open when --yes flag is used
+          openInBrowser(reportPath);
+        }
+        
         return;
       }
 

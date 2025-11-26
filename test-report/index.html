@@ -1,0 +1,2506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DevGhost Dead Code Analysis Report">
+  <title>DevGhost Analysis Report - 11/26/2025, 5:04:10 PM</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+:root {
+  /* Light mode colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-card: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6c757d;
+  --text-muted: #adb5bd;
+  --border-color: #dee2e6;
+  --accent-primary: #6366f1;
+  --accent-secondary: #8b5cf6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --gradient-error: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --border-color: #334155;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Header */
+.header {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(50%, -50%);
+}
+
+.header-content {
+  position: relative;
+  z-index: 1;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.95;
+}
+
+.header-meta {
+  margin-top: 1rem;
+  display: flex;
+  gap: 2rem;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Action Buttons Section */
+.action-buttons-section {
+  margin-bottom: 2rem;
+}
+
+.action-buttons-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-md);
+}
+
+.action-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.action-btn .btn-icon {
+  font-size: 1.2rem;
+}
+
+.action-btn.primary {
+  background: var(--gradient-primary);
+  color: white;
+}
+
+.action-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.action-btn.secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.action-btn.secondary:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+}
+
+.time-estimate {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--bg-secondary);
+  border-radius: 0.75rem;
+  border: 2px solid var(--border-color);
+}
+
+.estimate-icon {
+  font-size: 1.5rem;
+}
+
+.estimate-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.estimate-text strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  font-size: 1.5rem;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--gradient-primary);
+}
+
+.stat-card.success::before { background: var(--gradient-success); }
+.stat-card.warning::before { background: var(--gradient-warning); }
+.stat-card.error::before { background: var(--gradient-error); }
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.stat-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+/* Charts Section */
+.charts-section {
+  margin-bottom: 2rem;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.chart-card h3 {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+}
+
+/* Issues Section */
+.issues-section {
+  margin-bottom: 2rem;
+}
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Search Controls */
+.search-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 0.5rem;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: white;
+}
+
+/* File Cards */
+.file-issues-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.file-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.file-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.file-card.hidden {
+  display: none;
+}
+
+.file-card-header {
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  user-select: none;
+}
+
+.file-card-header:hover {
+  background: var(--bg-secondary);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.file-path {
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.type-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.type-badge.type-import { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.type-badge.type-export { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.type-badge.type-function { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.type-badge.type-type { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.type-badge.type-variable { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.type-badge.type-file { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
+
+.issue-count-badge {
+  padding: 0.25rem 0.75rem;
+  background: var(--accent-primary);
+  color: white;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.expand-icon {
+  font-size: 0.75rem;
+  transition: transform 0.3s ease;
+  color: var(--text-secondary);
+}
+
+.expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.file-card-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  border-top: 1px solid transparent;
+}
+
+.file-card-content.expanded {
+  max-height: 5000px;
+  border-top-color: var(--border-color);
+}
+
+/* Issue Items */
+.issue-list {
+  list-style: none;
+  padding: 1rem 1.5rem;
+}
+
+.issue-item {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-left: 3px solid var(--border-color);
+  border-radius: 0.5rem;
+  background: var(--bg-secondary);
+  transition: all 0.2s ease;
+}
+
+.issue-item:hover {
+  border-left-color: var(--accent-primary);
+  transform: translateX(4px);
+}
+
+.issue-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.issue-icon {
+  font-size: 1rem;
+}
+
+.issue-title {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  flex: 1;
+}
+
+.issue-badge {
+  padding: 0.125rem 0.5rem;
+  background: var(--bg-primary);
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+.issue-details {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-left: 1.5rem;
+  font-family: 'Courier New', monospace;
+}
+
+/* File Tree */
+.file-tree {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.tree-item {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.tree-item:hover {
+  background: var(--bg-secondary);
+}
+
+.tree-folder {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tree-file {
+  margin-left: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.tree-badge {
+  background: var(--error);
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Code Syntax Highlighting */
+.token-keyword { color: #c678dd; }
+.token-string { color: #98c379; }
+.token-number { color: #d19a66; }
+.token-function { color: #61afef; }
+.token-comment { color: #5c6370; font-style: italic; }
+.token-operator { color: #56b6c2; }
+.token-punctuation { color: #abb2bf; }
+
+/* Footer */
+.footer {
+  margin-top: 4rem;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-color);
+}
+
+.footer a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--bg-card);
+  border: 2px dashed var(--border-color);
+  border-radius: 1rem;
+  margin: 2rem 0;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--success);
+}
+
+.empty-state-message {
+  color: var(--text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .header-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .theme-toggle {
+    top: 1rem;
+    right: 1rem;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card,
+.issue-category,
+.chart-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Utilities */
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+/* Print Styles */
+@media print {
+  .theme-toggle,
+  .action-buttons-section {
+    display: none !important;
+  }
+  
+  .file-card-content {
+    max-height: none !important;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
+}
+</style>
+</head>
+<body>
+  <!-- Theme Toggle -->
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle Dark/Light Mode">
+    <span id="theme-icon">🌙</span>
+  </button>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h1>
+          <span>👻</span>
+          DevGhost Analysis Report
+        </h1>
+        <p class="header-subtitle">Dead Code Detection & Analysis</p>
+        <div class="header-meta">
+          <div>📅 Generated: 11/26/2025, 5:04:10 PM</div>
+          <div>📊 Files Scanned: 41</div>
+          <div>🔍 Issues Found: 71</div>
+        </div>
+      </div>
+    </header>
+
+    
+    <div class="action-buttons-section">
+      <div class="action-buttons-container">
+        <button class="action-btn primary" onclick="copyFixCommands()" title="Copy commands to fix all issues">
+          <span class="btn-icon">📋</span>
+          <span>Copy Fix Commands</span>
+        </button>
+        
+        <button class="action-btn secondary" onclick="exportToPDF()" title="Print or save as PDF">
+          <span class="btn-icon">📄</span>
+          <span>Export as PDF</span>
+        </button>
+        
+        <div class="time-estimate">
+          <span class="estimate-icon">⏱️</span>
+          <span class="estimate-text">
+            <strong>Manual review time:</strong> ~3 hours
+            <span style="display: block; font-size: 0.8rem; opacity: 0.8; margin-top: 0.25rem;">
+              💡 Use commands above to auto-fix in minutes!
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+  
+
+    
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+      
+    <div class="stat-card error">
+      <div class="stat-header">
+        <span class="stat-label">Total Issues</span>
+        <span class="stat-icon">🚨</span>
+      </div>
+      <div class="stat-value">71</div>
+      <div class="stat-subtitle">Unused code detected</div>
+    </div>
+
+    <div class="stat-card warning">
+      <div class="stat-header">
+        <span class="stat-label">Code Savings</span>
+        <span class="stat-icon">📉</span>
+      </div>
+      <div class="stat-value">3.68 MB</div>
+      <div class="stat-subtitle">4,982 lines of code</div>
+    </div>
+
+    <div class="stat-card warning">
+      <div class="stat-header">
+        <span class="stat-label">Dependencies</span>
+        <span class="stat-icon">📦</span>
+      </div>
+      <div class="stat-value">0</div>
+      <div class="stat-subtitle">0 B unused</div>
+    </div>
+
+    <div class="stat-card success">
+      <div class="stat-header">
+        <span class="stat-label">Files Scanned</span>
+        <span class="stat-icon">📁</span>
+      </div>
+      <div class="stat-value">41</div>
+      <div class="stat-subtitle">Out of 42 total</div>
+    </div>
+  
+    </div>
+
+    <!-- Charts Section -->
+    
+    <section class="charts-section">
+      <h2 class="section-title mb-3">Visual Analysis</h2>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>Issues by Category</h3>
+          <div class="chart-container">
+            <canvas id="issuesCategoryChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Potential Savings</h3>
+          <div class="chart-container">
+            <canvas id="savingsChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+  
+
+    <!-- Issues Section -->
+    
+    <section class="issues-section">
+      <div class="section-header">
+        <h2 class="section-title">Issue Explorer</h2>
+        <div class="search-controls">
+          <input 
+            type="text" 
+            id="issueSearch" 
+            class="search-input" 
+            placeholder="🔍 Search by file name or issue type..."
+            onkeyup="filterIssues()"
+          />
+          <div class="filter-buttons">
+            <button class="filter-btn active" onclick="filterByCategory('all')">All</button>
+            <button class="filter-btn" onclick="filterByCategory('import')">Imports</button>
+            <button class="filter-btn" onclick="filterByCategory('export')">Exports</button>
+            <button class="filter-btn" onclick="filterByCategory('function')">Functions</button>
+            <button class="filter-btn" onclick="filterByCategory('file')">Files</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="file-issues-container">
+        
+      <div class="file-card" data-file="F:\devghost\vscode-devghost\src\extension.ts" data-types="import,export,file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\vscode-devghost\src\extension.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-import">3 imports</span><span class="type-badge type-export">2 exports</span><span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">6 issues</span>
+            <span class="expand-icon expanded">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content expanded">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📥</span>
+        <span class="issue-title">Unused import 'analyzeUnusedVariables' from 'devghost/dist/analyzer/unusedVariables'</span>
+      </div>
+      <div class="issue-details">Line 4 • import { analyzeUnusedFunctions } from &#039;devghost/dist/analyzer/unusedFunctions&#039;;</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📥</span>
+        <span class="issue-title">Unused import 'analyzeUnusedFunctions' from 'devghost/dist/analyzer/unusedFunctions'</span>
+      </div>
+      <div class="issue-details">Line 5 • import { analyzeUnusedTypes } from &#039;devghost/dist/analyzer/unusedTypes&#039;;</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📥</span>
+        <span class="issue-title">Unused import 'analyzeUnusedTypes' from 'devghost/dist/analyzer/unusedTypes'</span>
+      </div>
+      <div class="issue-details">Line 6 • </div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'activate'</span>
+      </div>
+      <div class="issue-details">Line 10 •   console.log(&#039;DevGhost extension activated! 👻&#039;);</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'deactivate'</span>
+      </div>
+      <div class="issue-details">Line 378 •   diagnosticCollection.clear();</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">12.17 KB • 381 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\coverage\prettify.js" data-types="variable,file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\coverage\prettify.js</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-variable">4 variables</span><span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">5 issues</span>
+            <span class="expand-icon expanded">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content expanded">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused var 'ae'</span>
+      </div>
+      <div class="issue-details">Line 3 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused var 'af'</span>
+      </div>
+      <div class="issue-details">Line 3 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused var 'ag'</span>
+      </div>
+      <div class="issue-details">Line 3 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused var 'ae'</span>
+      </div>
+      <div class="issue-details">Line 3 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">17.18 KB • 3 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\coverage\lcov-report\prettify.js" data-types="variable,file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\coverage\lcov-report\prettify.js</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-variable">4 variables</span><span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">5 issues</span>
+            <span class="expand-icon expanded">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content expanded">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused var 'ae'</span>
+      </div>
+      <div class="issue-details">Line 3 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused var 'af'</span>
+      </div>
+      <div class="issue-details">Line 3 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused var 'ag'</span>
+      </div>
+      <div class="issue-details">Line 3 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused var 'ae'</span>
+      </div>
+      <div class="issue-details">Line 3 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">17.18 KB • 3 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\tests\utils.ts" data-types="export,variable,file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\tests\utils.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-export">2 exports</span><span class="type-badge type-variable">1 variable</span><span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">4 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'createMockPackageJson'</span>
+      </div>
+      <div class="issue-details">Line 42 •   overrides: Record&lt;string, unknown&gt; = {}</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'FIXTURES'</span>
+      </div>
+      <div class="issue-details">Line 57 •   unusedImport: `</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused const 'FIXTURES'</span>
+      </div>
+      <div class="issue-details">Line 57 • module scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">1.99 KB • 116 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\utils\tsparser.ts" data-types="export">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\utils\tsparser.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-export">4 exports</span>
+            <span class="issue-count-badge">4 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'extractImports'</span>
+      </div>
+      <div class="issue-details">Line 21 •   const imports: ts.ImportDeclaration[] = [];</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'extractExports'</span>
+      </div>
+      <div class="issue-details">Line 38 •   const exports: ts.ExportDeclaration[] = [];</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'isTypeOnlyImport'</span>
+      </div>
+      <div class="issue-details">Line 169 •   return importDecl.importClause?.isTypeOnly || false;</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'shouldIgnoreLine'</span>
+      </div>
+      <div class="issue-details">Line 199 •   const lines = content.split(&#039;\n&#039;);</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\utils\logger.ts" data-types="export,variable">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\utils\logger.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-export">3 exports</span><span class="type-badge type-variable">1 variable</span>
+            <span class="issue-count-badge">4 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'formatSize'</span>
+      </div>
+      <div class="issue-details">Line 36 •   if (bytes === 0) return &#039;0 B&#039;;</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'formatStats'</span>
+      </div>
+      <div class="issue-details">Line 49 •   const { potentialSavings } = stats;</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'createProgressBar'</span>
+      </div>
+      <div class="issue-details">Line 222 •   update: (current: number) =&gt; void;</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused parameter 'current'</span>
+      </div>
+      <div class="issue-details">Line 223 • function scope</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\utils\fs.ts" data-types="export,variable">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\utils\fs.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-export">1 export</span><span class="type-badge type-variable">3 variables</span>
+            <span class="issue-count-badge">4 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'removeLineFromFile'</span>
+      </div>
+      <div class="issue-details">Line 155 •   try {</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused const '_error'</span>
+      </div>
+      <div class="issue-details">Line 76 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused const '_error'</span>
+      </div>
+      <div class="issue-details">Line 104 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused const '_error'</span>
+      </div>
+      <div class="issue-details">Line 147 • block scope</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\reporter\htmlReporter.ts" data-types="export,file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\reporter\htmlReporter.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-export">2 exports</span><span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">3 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'generateHtmlReport'</span>
+      </div>
+      <div class="issue-details">Line 10 •   results: AnalysisResult,</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'openInBrowser'</span>
+      </div>
+      <div class="issue-details">Line 37 •   const absolutePath = path.resolve(filePath);</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">1.62 KB • 56 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\fixer\dependencyFixer.ts" data-types="export,variable">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\fixer\dependencyFixer.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-export">2 exports</span><span class="type-badge type-variable">1 variable</span>
+            <span class="issue-count-badge">3 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'DependencyFixResult'</span>
+      </div>
+      <div class="issue-details">Line 8 •   success: boolean;</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'removeDependency'</span>
+      </div>
+      <div class="issue-details">Line 14 •   packageName: string,</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused parameter '_includeDevDeps'</span>
+      </div>
+      <div class="issue-details">Line 60 • function scope</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\reporter\templates\reportTemplate.ts" data-types="function,variable,file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\reporter\templates\reportTemplate.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-function">1 function</span><span class="type-badge type-variable">1 variable</span><span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">3 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">⚙️</span>
+        <span class="issue-title">Unused function 'generateIssueCategory'</span>
+      </div>
+      <div class="issue-details">Line 438 • Internal</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused parameter 'results'</span>
+      </div>
+      <div class="issue-details">Line 223 • function scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">28.66 KB • 860 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\utils\packageManager.ts" data-types="export,variable">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\utils\packageManager.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-export">1 export</span><span class="type-badge type-variable">1 variable</span>
+            <span class="issue-count-badge">2 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'PackageManager'</span>
+      </div>
+      <div class="issue-details">Line 5 • </div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused parameter '_isDev'</span>
+      </div>
+      <div class="issue-details">Line 20 • function scope</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\vscode-devghost\out\extension.js" data-types="function,file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\vscode-devghost\out\extension.js</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-function">1 function</span><span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">2 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">⚙️</span>
+        <span class="issue-title">Unused function 'kvt'</span>
+      </div>
+      <div class="issue-details">Line 35 • Internal</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">3.53 MB • 466 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\fixer\index.ts" data-types="variable">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\fixer\index.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-variable">2 variables</span>
+            <span class="issue-count-badge">2 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused const '_error'</span>
+      </div>
+      <div class="issue-details">Line 107 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused const '_error'</span>
+      </div>
+      <div class="issue-details">Line 238 • block scope</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\analyzer\unusedVariables.ts" data-types="variable">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\analyzer\unusedVariables.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-variable">2 variables</span>
+            <span class="issue-count-badge">2 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused const '_parent'</span>
+      </div>
+      <div class="issue-details">Line 45 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused parameter '_sourceFile'</span>
+      </div>
+      <div class="issue-details">Line 125 • function scope</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\reporter\templates\styles.ts" data-types="variable,file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\reporter\templates\styles.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-variable">1 variable</span><span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">2 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused const 'reportStyles'</span>
+      </div>
+      <div class="issue-details">Line 6 • module scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">14.03 KB • 734 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\coverage\sorter.js" data-types="variable,file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\coverage\sorter.js</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-variable">1 variable</span><span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">2 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused const 'error'</span>
+      </div>
+      <div class="issue-details">Line 37 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">6.57 KB • 211 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\coverage\lcov-report\sorter.js" data-types="variable,file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\coverage\lcov-report\sorter.js</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-variable">1 variable</span><span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">2 issues</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused const 'error'</span>
+      </div>
+      <div class="issue-details">Line 37 • block scope</div>
+    </li>
+  
+
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">6.57 KB • 211 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\analyzer\imports.ts" data-types="export">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\analyzer\imports.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-export">1 export</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📤</span>
+        <span class="issue-title">Unused named export 'analyzeFileImports'</span>
+      </div>
+      <div class="issue-details">Line 18 •   const unusedImports: UnusedImport[] = [];</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\src\analyzer\files.ts" data-types="variable">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\src\analyzer\files.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-variable">1 variable</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📝</span>
+        <span class="issue-title">Unused parameter '_projectRoot'</span>
+      </div>
+      <div class="issue-details">Line 134 • function scope</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\tests\utils\packageManager.test.ts" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\tests\utils\packageManager.test.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">3.88 KB • 129 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\tests\fixer\index.test.ts" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\tests\fixer\index.test.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">2.94 KB • 121 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\tests\fixer\fixImports.test.ts" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\tests\fixer\fixImports.test.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">3.43 KB • 135 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\tests\analyzer\variables.test.ts" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\tests\analyzer\variables.test.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">3.38 KB • 133 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\tests\analyzer\types.test.ts" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\tests\analyzer\types.test.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">7.07 KB • 340 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\tests\analyzer\imports.test.ts" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\tests\analyzer\imports.test.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">3.12 KB • 146 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\tests\analyzer\functions.test.ts" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\tests\analyzer\functions.test.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">2.99 KB • 127 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\tests\analyzer\files.test.ts" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\tests\analyzer\files.test.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">6.01 KB • 242 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\tests\analyzer\exports.test.ts" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\tests\analyzer\exports.test.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">2.08 KB • 83 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\tests\analyzer\deps.test.ts" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\tests\analyzer\deps.test.ts</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">5.4 KB • 222 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\jest.config.js" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\jest.config.js</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">585 B • 26 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\vscode-devghost\esbuild.js" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\vscode-devghost\esbuild.js</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">671 B • 32 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\coverage\block-navigation.js" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\coverage\block-navigation.js</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">2.59 KB • 88 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      <div class="file-card" data-file="F:\devghost\coverage\lcov-report\block-navigation.js" data-types="file">
+        <div class="file-card-header" onclick="toggleFileCard(this)">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <span class="file-path">F:\devghost\coverage\lcov-report\block-navigation.js</span>
+          </div>
+          <div class="file-meta">
+            <span class="type-badge type-file">1 file</span>
+            <span class="issue-count-badge">1 issue</span>
+            <span class="expand-icon ">▼</span>
+          </div>
+        </div>
+        
+        <div class="file-card-content ">
+          <ul class="issue-list">
+            
+    <li class="issue-item">
+      <div class="issue-header">
+        <span class="issue-icon">📄</span>
+        <span class="issue-title">Not imported by any other file</span>
+      </div>
+      <div class="issue-details">2.59 KB • 88 lines</div>
+    </li>
+  
+          </ul>
+        </div>
+      </div>
+    
+      </div>
+    </section>
+  
+
+    <!-- Savings Summary -->
+    
+    <section class="issue-category">
+      <div class="category-header">
+        <h3 class="category-title">
+          <span>💾</span>
+          Potential Savings
+        </h3>
+      </div>
+      <div class="stats-grid">
+        <div style="text-align: center; padding: 1rem;">
+          <div style="font-size: 2rem; font-weight: 700; color: var(--success);">
+            3.68 MB
+          </div>
+          <div style="color: var(--text-secondary); margin-top: 0.5rem;">Code Size</div>
+        </div>
+        <div style="text-align: center; padding: 1rem;">
+          <div style="font-size: 2rem; font-weight: 700; color: var(--success);">
+            4,982
+          </div>
+          <div style="color: var(--text-secondary); margin-top: 0.5rem;">Lines of Code</div>
+        </div>
+        <div style="text-align: center; padding: 1rem;">
+          <div style="font-size: 2rem; font-weight: 700; color: var(--success);">
+            0 B
+          </div>
+          <div style="color: var(--text-secondary); margin-top: 0.5rem;">Dependencies</div>
+        </div>
+      </div>
+    </section>
+  
+  
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Generated by <a href="https://github.com/Haileyesus-22/devghost" target="_blank">DevGhost</a> v0.3.8</p>
+      <p style="margin-top: 0.5rem; font-size: 0.9rem;">The Exorcist for Your Codebase</p>
+    </footer>
+  </div>
+
+  <script>
+    
+    // Theme toggle
+    let isDark = localStorage.getItem('theme') === 'dark';
+    
+    function applyTheme() {
+      if (isDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.getElementById('theme-icon').textContent = '☀️';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        document.getElementById('theme-icon').textContent = '🌙';
+      }
+    }
+
+    function toggleTheme() {
+      isDark = !isDark;
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      applyTheme();
+    }
+
+    // Apply theme on load
+    applyTheme();
+
+    // Initialize charts
+    if (typeof Chart !== 'undefined') {
+      // Issues by Category Chart
+      const ctx1 = document.getElementById('issuesCategoryChart');
+      if (ctx1) {
+        new Chart(ctx1, {
+          type: 'doughnut',
+          data: {
+            labels: [
+              'Unused Imports (3)',
+              'Unused Exports (18)',
+              'Unused Functions (2)',
+              'Unused Types (0)',
+              'Unused Variables (24)',
+              'Unused Files (24)',
+              'Unused Dependencies (0)'
+            ],
+            datasets: [{
+              data: [
+                3,
+                18,
+                2,
+                0,
+                24,
+                24,
+                0
+              ],
+              backgroundColor: [
+                '#ef4444',
+                '#f59e0b',
+                '#10b981',
+                '#3b82f6',
+                '#8b5cf6',
+                '#ec4899',
+                '#14b8a6'
+              ],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  padding: 15,
+                  font: { size: 12 },
+                  color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary')
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Savings Chart
+      const ctx2 = document.getElementById('savingsChart');
+      if (ctx2) {
+        new Chart(ctx2, {
+          type: 'bar',
+          data: {
+            labels: ['Code (KB)', 'Lines', 'Dependencies (MB)'],
+            datasets: [{
+              label: 'Potential Savings',
+              data: [
+                3768.44,
+                4982,
+                0.00
+              ],
+              backgroundColor: [
+                'rgba(99, 102, 241, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)'
+              ],
+              borderColor: [
+                'rgb(99, 102, 241)',
+                'rgb(139, 92, 246)',
+                'rgb(16, 185, 129)'
+              ],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                },
+                grid: {
+                  color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                }
+              },
+              x: {
+                ticks: {
+                  color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                },
+                grid: {
+                  display: false
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // File card toggle function
+    function toggleFileCard(header) {
+      const card = header.parentElement;
+      const content = card.querySelector('.file-card-content');
+      const icon = card.querySelector('.expand-icon');
+      
+      content.classList.toggle('expanded');
+      icon.classList.toggle('expanded');
+    }
+
+    //Search filter function
+    function filterIssues() {
+      const searchTerm = document.getElementById('issueSearch').value.toLowerCase();
+      const fileCards = document.querySelectorAll('.file-card');
+      
+      fileCards.forEach(card => {
+        const filePath = card.getAttribute('data-file') || card.textContent.toLowerCase();
+        if (filePath.toLowerCase().includes(searchTerm)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    // Category filter function
+    let activeCategory = 'all';
+    
+    function filterByCategory(category) {
+      activeCategory = category;
+      
+      // Update button states
+      const buttons = document.querySelectorAll('.filter-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Filter cards by category
+      const fileCards = document.querySelectorAll('.file-card');
+      
+      fileCards.forEach(card => {
+        const types = (card.getAttribute('data-types') || '').split(',');
+        
+        if (category === 'all' || types.includes(category)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    // Copy fix commands to clipboard
+    function copyFixCommands() {
+      const commands = [];
+      
+      const totalImports = 3;
+      const totalDeps = 0;
+      const totalFunctions = 2;
+      
+      commands.push('# DevGhost Auto-Fix Commands');
+      commands.push('# Generated: 11/26/2025, 5:04:10 PM');
+      commands.push('# Run these commands to auto-fix issues quickly!');
+      commands.push('');
+      
+      if (totalImports > 0) {
+        commands.push('# Fix unused imports (' + totalImports + ' issues)');
+        commands.push('devghost --fix');
+        commands.push('');
+      }
+      
+      if (totalDeps > 0) {
+        commands.push('# Remove unused dependencies (' + totalDeps + ' packages)');
+        commands.push('devghost --fix-deps --yes');
+        commands.push('');
+      }
+      
+      if (totalFunctions > 0) {
+        commands.push('# Remove unused functions (' + totalFunctions + ' functions)');
+        commands.push('devghost --fix-functions --yes');
+        commands.push('');
+      }
+      
+      commands.push('# Generate a fresh report');
+      commands.push('devghost --report html');
+      
+      const commandText = commands.join('\n');
+      
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(commandText).then(() => {
+          showCopySuccess();
+        }).catch(err => {
+          // Fallback to textarea method
+          fallbackCopy(commandText);
+        });
+      } else {
+        // Fallback for older browsers
+        fallbackCopy(commandText);
+      }
+    }
+    
+    function fallbackCopy(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.top = '0';
+      textarea.style.left = '0';
+      textarea.style.width = '2em';
+      textarea.style.height = '2em';
+      textarea.style.padding = '0';
+      textarea.style.border = 'none';
+      textarea.style.outline = 'none';
+      textarea.style.boxShadow = 'none';
+      textarea.style.background = 'transparent';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      
+      let success = false;
+      try {
+        success = document.execCommand('copy');
+        if (success) {
+          showCopySuccess();
+        } else {
+          // If execCommand fails, show the text in a modal-like alert
+          showCopyModal(text);
+        }
+      } catch (err) {
+        showCopyModal(text);
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
+    
+    function showCopyModal(text) {
+      // Create a better modal instead of alert
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 2rem;';
+      
+      const content = document.createElement('div');
+      content.style.cssText = 'background: var(--bg-card); border-radius: 1rem; padding: 2rem; max-width: 600px; width: 100%; max-height: 80vh; overflow: auto;';
+      
+      content.innerHTML = `
+        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">📋 Copy Fix Commands</h3>
+        <p style="margin-bottom: 1rem; color: var(--text-secondary);">Select all text below (Ctrl+A) and copy (Ctrl+C):</p>
+        <textarea readonly style="width: 100%; min-height: 200px; padding: 1rem; font-family: monospace; font-size: 0.9rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 0.5rem; color: var(--text-primary);">${text}</textarea>
+        <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 1rem; padding: 0.75rem 1.5rem; background: var(--gradient-primary); color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">Close</button>
+      `;
+      
+      modal.appendChild(content);
+      document.body.appendChild(modal);
+      
+      // Auto-select the textarea
+      const ta = content.querySelector('textarea');
+      ta.focus();
+      ta.select();
+      
+      // Close on click outside
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+    
+    function showCopySuccess() {
+      const btn = event.target.closest('.action-btn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="btn-icon">✅</span><span>Copied!</span>';
+      btn.style.background = 'var(--gradient-success)';
+      
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.background = '';
+      }, 2000);
+    }
+
+    // Export report as PDF
+    function exportToPDF() {
+      window.print();
+    }
+  
+  </script>
+</body>
+</html>

@@ -20,23 +20,27 @@
 
 ---
 
-## 🎉 Latest Release (v0.3.8)
+## 🎉 Latest Release (v0.4.0)
 
-- ✨ **NEW**: VSCode Extension badge added to README
+- ✨ **NEW: HTML Report Generator** – Beautiful, interactive visual reports!
+  - 📊 Charts & statistics dashboard
+  - 🎨 Dark/light theme with modern UI
+  - 🔍 Smart file explorer with search & filters
+  - 📋 One-click copy auto-fix commands
+  - 📄 Export to PDF
 - ✅ **VSCode Extension v0.1.6** – Fix Entire Workspace command
 - ✅ **74% Test Coverage** – 68 tests, all passing
-- ✅ **Unused Types Detection** – interfaces, type aliases, enums
-- ✅ **Unused Variables** – dead `const/let` and function parameters
-- ✅ **Enhanced Analyzers** – deps, files, exports, functions
 
 ---
 
 ## ✨ Core Features
+
+- 📊 **HTML Reports** – Generate beautiful, shareable visual reports with `--report html`
 - 🔍 **Smart Detection** – deep static analysis via the TypeScript Compiler API
 - 🧹 **Auto‑Fix** – `--fix` removes unused imports, `--fix‑deps` removes dead dependencies  
 - 🎯 **Interactive Mode** – review each issue one‑by‑one
 - 📦 **Dependency Cleanup** – safely uninstall unused npm packages
-- 📊 **Impact Analysis** – see how many KB/LOC you'll save
+- 💾 **Impact Analysis** – see how many KB/LOC you'll save
 - 🚀 **CI/CD Ready** – `--ci` exits with code 1 on any issue
 - 🎨 **Beautiful Output** – colour‑coded, easy‑to‑read reports
 - 🧩 **Unused Types** – interfaces, type aliases, enums, classes
@@ -68,11 +72,20 @@ npm install -D devghost
 # 👻 Basic scan (default)
 devghost
 
-# 🛡️ Interactive mode (approve every change)
+# � Generate HTML report (NEW in v0.4!)
+devghost --report html
+
+# 📄 Custom output path
+devghost --report html --output ./reports/analysis.html
+
+# �🛡️ Interactive mode (approve every change)
 devghost --interactive
 
 # 🧹 Auto-fix unused imports
 devghost --fix
+
+# ⚙️ Auto-fix unused functions
+devghost --fix-functions
 
 # 📦 Auto-fix unused dependencies
 devghost --fix-deps
@@ -80,6 +93,17 @@ devghost --fix-deps
 # 🚀 CI mode (exit with error if issues found)
 devghost --ci
 ```
+
+### HTML Report Features 🎨
+
+The new HTML report provides:
+- **📊 Visual Dashboard** – Stats cards and interactive Chart.js charts
+- **🔍 Smart Explorer** – File-grouped issues with search & category filters
+- **🌓 Theme Toggle** – Beautiful dark/light mode
+- **📋 Copy Commands** – One-click to get auto-fix CLI commands
+- **⏱️ Time Estimates** – See manual review time vs. auto-fix time
+- **📄 Export to PDF** – Print or save reports for documentation
+- **📱 Fully Responsive** – Works great on mobile, tablet, and desktop
 
 ### Sample output
 ```

@@ -95,6 +95,8 @@ export interface DevGhostConfig {
   interactive?: boolean;
   ci?: boolean;
   dryRun?: boolean;
+  report?: 'html' | 'json';
+  output?: string;
 }
 
 export interface FixResult {
