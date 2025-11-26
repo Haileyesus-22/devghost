@@ -246,7 +246,7 @@ program
       // Handle HTML report generation
       if (config.report === 'html') {
         const reportPath = await generateHtmlReport(results, config.output);
-        
+
         if (!config.quiet) {
           success(`HTML report generated: ${reportPath}`);
         }
@@ -270,7 +270,7 @@ program
           // Auto-open when --yes flag is used
           openInBrowser(reportPath);
         }
-        
+
         return;
       }
 

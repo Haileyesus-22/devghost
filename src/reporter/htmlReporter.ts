@@ -36,7 +36,7 @@ export async function generateHtmlReport(
 export function openInBrowser(filePath: string): void {
   const absolutePath = path.resolve(filePath);
   const fileUrl = `file:///${absolutePath.replace(/\\/g, '/')}`;
-  
+
   // Platform-specific open command
   const platform = process.platform;
   let command: string;
@@ -51,5 +51,5 @@ export function openInBrowser(filePath: string): void {
 
   // Execute command
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  require('child_process').exec(command);
+  require('node:child_process').exec(command);
 }

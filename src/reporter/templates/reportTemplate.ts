@@ -4,10 +4,7 @@ import { reportStyles } from './styles';
 /**
  * Generate the complete HTML report template
  */
-export function generateReportTemplate(
-  results: AnalysisResult,
-  generatedAt: string
-): string {
+export function generateReportTemplate(results: AnalysisResult, generatedAt: string): string {
   const totalIssues =
     results.unusedImports.length +
     results.unusedFiles.length +
@@ -86,7 +83,7 @@ function generateEmptyState(): string {
  */
 function generateActionButtons(results: AnalysisResult): string {
   const timeEstimate = estimateTimeToFix(results);
-  
+
   return `
     <div class="action-buttons-section">
       <div class="action-buttons-container">
@@ -125,7 +122,7 @@ function estimateTimeToFix(results: AnalysisResult): string {
   const timePerVariable = 1;
   const timePerFile = 5;
   const timePerDep = 2;
-  
+
   const totalMinutes =
     results.unusedImports.length * timePerImport +
     results.unusedExports.length * timePerExport +
@@ -134,7 +131,7 @@ function estimateTimeToFix(results: AnalysisResult): string {
     results.unusedVariables.length * timePerVariable +
     results.unusedFiles.length * timePerFile +
     results.unusedDependencies.length * timePerDep;
-  
+
   if (totalMinutes < 5) return '< 5 minutes';
   if (totalMinutes < 15) return '5-15 minutes';
   if (totalMinutes < 30) return '15-30 minutes';
@@ -247,8 +244,8 @@ function generateChartsSection(results: AnalysisResult): string {
 function generateIssuesSection(results: AnalysisResult): string {
   // Group all issues by file
   const fileIssues = groupIssuesByFile(results);
-  
-  let html = `
+
+  const html = `
     <section class="issues-section">
       <div class="section-header">
         <h2 class="section-title">Issue Explorer</h2>
@@ -275,56 +272,72 @@ function generateIssuesSection(results: AnalysisResult): string {
       </div>
     </section>
   `;
-  
+
   return html;
 }
 
 /**
  * Group all issues by file path
  */
-function groupIssuesByFile(results: AnalysisResult): Map<string, any[]> {
-  const fileMap = new Map<string, any[]>();
-  
+// biome-ignore lint/suspicious/noExplicitAny: Mixed issue types require flexible typing
+type FileIssue = { type: string; icon: string; [key: string]: any };
+
+function groupIssuesByFile(results: AnalysisResult): Map<string, FileIssue[]> {
+  const fileMap = new Map<string, FileIssue[]>();
+
   // Helper to add issue to map
-  const addIssue = (file: string, issue: any) => {
+  const addIssue = (file: string, issue: FileIssue) => {
     if (!fileMap.has(file)) {
       fileMap.set(file, []);
     }
-    fileMap.get(file)!.push(issue);
+    fileMap.get(file)?.push(issue);
   };
-  
+
   // Group all issue types
-  results.unusedImports.forEach(imp => addIssue(imp.file, { ...imp, type: 'import', icon: '📥' }));
-  results.unusedExports.forEach(exp => addIssue(exp.file, { ...exp, type: 'export', icon: '📤' }));
-  results.unusedFunctions.forEach(func => addIssue(func.file, { ...func, type: 'function', icon: '⚙️' }));
-  results.unusedTypes.forEach(type => addIssue(type.file, { ...type, type: 'type', icon: '🔤' }));
-  results.unusedVariables.forEach(v => addIssue(v.file, { ...v, type: 'variable', icon: '📝' }));
-  results.unusedFiles.forEach(file => addIssue(file.path, { ...file, type: 'file', icon: '📄' }));
-  
+  for (const imp of results.unusedImports) {
+    addIssue(imp.file, { ...imp, type: 'import', icon: '📥' });
+  }
+  for (const exp of results.unusedExports) {
+    addIssue(exp.file, { ...exp, type: 'export', icon: '📤' });
+  }
+  for (const func of results.unusedFunctions) {
+    addIssue(func.file, { ...func, type: 'function', icon: '⚙️' });
+  }
+  for (const type of results.unusedTypes) {
+    addIssue(type.file, { ...type, type: 'type', icon: '🔤' });
+  }
+  for (const v of results.unusedVariables) {
+    addIssue(v.file, { ...v, type: 'variable', icon: '📝' });
+  }
+  for (const file of results.unusedFiles) {
+    addIssue(file.path, { ...file, type: 'file', icon: '📄' });
+  }
+
   return fileMap;
 }
 
 /**
  * Generate file-based issue cards
  */
-function generateFileIssueCards(fileMap: Map<string, any[]>, results: AnalysisResult): string {
+function generateFileIssueCards(fileMap: Map<string, FileIssue[]>, results: AnalysisResult): string {
   let html = '';
-  
+
   // Sort files by number of issues (descending)
-  const sortedFiles = Array.from(fileMap.entries())
-    .sort((a, b) => b[1].length - a[1].length);
-  
+  const sortedFiles = Array.from(fileMap.entries()).sort((a, b) => b[1].length - a[1].length);
+
   sortedFiles.forEach(([filePath, issues], index) => {
     const issueCount = issues.length;
     const isExpanded = index < 3; // Auto-expand top 3 files
-    
+
     // Get unique issue types for this file
-    const types = [...new Set(issues.map(i => i.type))];
-    const typeLabels = types.map(t => {
-      const count = issues.filter(i => i.type === t).length;
-      return `<span class="type-badge type-${t}">${count} ${t}${count > 1 ? 's' : ''}</span>`;
-    }).join('');
-    
+    const types = [...new Set(issues.map((i) => i.type))];
+    const typeLabels = types
+      .map((t) => {
+        const count = issues.filter((i) => i.type === t).length;
+        return `<span class="type-badge type-${t}">${count} ${t}${count > 1 ? 's' : ''}</span>`;
+      })
+      .join('');
+
     html += `
       <div class="file-card" data-file="${escapeHtml(filePath)}" data-types="${types.join(',')}">
         <div class="file-card-header" onclick="toggleFileCard(this)">
@@ -341,13 +354,13 @@ function generateFileIssueCards(fileMap: Map<string, any[]>, results: AnalysisRe
         
         <div class="file-card-content ${isExpanded ? 'expanded' : ''}">
           <ul class="issue-list">
-            ${issues.map(issue => generateIssueItem(issue)).join('\n')}
+            ${issues.map((issue) => generateIssueItem(issue)).join('\n')}
           </ul>
         </div>
       </div>
     `;
   });
-  
+
   // Add unused dependencies separately if any
   if (results.unusedDependencies.length > 0) {
     html += `
@@ -365,7 +378,9 @@ function generateFileIssueCards(fileMap: Map<string, any[]>, results: AnalysisRe
         
         <div class="file-card-content">
           <ul class="issue-list">
-            ${results.unusedDependencies.map(dep => `
+            ${results.unusedDependencies
+              .map(
+                (dep) => `
               <li class="issue-item">
                 <div class="issue-header">
                   <span class="issue-icon">📦</span>
@@ -376,23 +391,25 @@ function generateFileIssueCards(fileMap: Map<string, any[]>, results: AnalysisRe
                   ${dep.size > 0 ? formatBytes(dep.size) + ' in node_modules' : 'Not installed'}
                 </div>
               </li>
-            `).join('\n')}
+            `
+              )
+              .join('\n')}
           </ul>
         </div>
       </div>
     `;
   }
-  
+
   return html || '<div class="empty-state-message">No issues found in this category</div>';
 }
 
 /**
  * Generate a single issue item
  */
-function generateIssueItem(issue: any): string {
+function generateIssueItem(issue: FileIssue): string {
   let title = '';
   let details = '';
-  
+
   switch (issue.type) {
     case 'import':
       title = `Unused import '${escapeHtml(issue.importName)}' from '${escapeHtml(issue.source)}'`;
@@ -419,7 +436,7 @@ function generateIssueItem(issue: any): string {
       details = `${formatBytes(issue.size)} • ${issue.lines} lines`;
       break;
   }
-  
+
   return `
     <li class="issue-item">
       <div class="issue-header">
