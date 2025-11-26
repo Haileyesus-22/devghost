@@ -216,7 +216,7 @@ function generateStatCards(results: AnalysisResult): string {
 /**
  * Generate charts section
  */
-function generateChartsSection(results: AnalysisResult): string {
+function generateChartsSection(_results: AnalysisResult): string {
   return `
     <section class="charts-section">
       <h2 class="section-title mb-3">Visual Analysis</h2>
@@ -319,7 +319,10 @@ function groupIssuesByFile(results: AnalysisResult): Map<string, FileIssue[]> {
 /**
  * Generate file-based issue cards
  */
-function generateFileIssueCards(fileMap: Map<string, FileIssue[]>, results: AnalysisResult): string {
+function generateFileIssueCards(
+  fileMap: Map<string, FileIssue[]>,
+  results: AnalysisResult
+): string {
   let html = '';
 
   // Sort files by number of issues (descending)
@@ -388,7 +391,7 @@ function generateFileIssueCards(fileMap: Map<string, FileIssue[]>, results: Anal
                   <span class="issue-badge">${dep.type}</span>
                 </div>
                 <div class="issue-details">
-                  ${dep.size > 0 ? formatBytes(dep.size) + ' in node_modules' : 'Not installed'}
+                  ${dep.size > 0 ? `${formatBytes(dep.size)} in node_modules` : 'Not installed'}
                 </div>
               </li>
             `
@@ -451,7 +454,7 @@ function generateIssueItem(issue: FileIssue): string {
 /**
  * Generate an issue category section
  */
-function generateIssueCategory(
+function _generateIssueCategory(
   title: string,
   icon: string,
   count: number,
