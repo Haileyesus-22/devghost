@@ -14,19 +14,6 @@
 </div>
 
 > **Is your project haunted by dead code?**  
-> Unused imports rattling  chains, zombie dependencies eating disk space, and phantom variables lurking in the shadows.
-
-**Who you gonna call?** `devghost` – the ultimate ghost‑hunter for JavaScript/TypeScript projects! 🚫👻
-
----
-
-## 🎉 Latest Release (v0.4.0)
-
-- ✨ **NEW: HTML Report Generator** – Beautiful, interactive visual reports!
-  - 📊 Charts & statistics dashboard
-  - 🎨 Dark/light theme with modern UI
-  - 🔍 Smart file explorer with search & filters
-  - 📋 One-click copy auto-fix commands
   - 📄 Export to PDF
 - ✅ **VSCode Extension v0.1.6** – Fix Entire Workspace command
 - ✅ **74% Test Coverage** – 68 tests, all passing

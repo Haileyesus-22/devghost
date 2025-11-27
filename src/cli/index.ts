@@ -11,9 +11,28 @@ import { generateHtmlReport, openInBrowser } from '../reporter';
 import type { AnalysisResult, DevGhostConfig, UnusedImport } from '../types';
 import { error, formatResults, info, success, warning } from '../utils/logger';
 
-const program = new Command();
-
 const packageJson = require('../../package.json');
+
+/**
+ * Check if user is running the latest version
+ */
+async function checkVersion(): Promise<void> {
+  try {
+    const response = await fetch('https://registry.npmjs.org/devghost/latest');
+    const data = (await response.json()) as { version: string };
+    const latestVersion = data.version;
+    const currentVersion = packageJson.version;
+
+    if (currentVersion !== latestVersion) {
+      console.log(warning(`\n⚠️  Update available! ${currentVersion} → ${latestVersion}`));
+      console.log(info('   Run: npm install -g devghost@latest\n'));
+    }
+  } catch {
+    // Silently ignore version check errors
+  }
+}
+
+const program = new Command();
 
 program
   .name('devghost')
@@ -29,14 +48,19 @@ program
   .option('--include-dev', 'Include devDependencies in analysis')
   .option('--fix-deps', 'Automatically remove unused dependencies')
   .option('--fix-functions', 'Automatically remove unused functions')
-  .option('--deps', 'Include dependencies when using --fix')
-  .option('--dry-run', 'Preview fixes without applying (use with --fix-deps)')
-  .option('-y, --yes', 'skip confirmation prompts (auto-confirm)')
+  .option('--fix-types', 'Automatically remove unused types')
+  .option('--fix-variables', 'Automatically remove unused variables')
+  .option('-y, --yes', 'Skip confirmation prompts (auto-confirm)')
   .option('-q, --quiet', 'Minimal output (errors and summary only)')
-  .option('--report <format>', 'Generate report (html)')
+  .option('--report <format>', 'Generate report (html or json)')
   .option('--output <path>', 'Custom output path for report')
   .action(async (targetPath: string, options) => {
     try {
+      // Check for updates (non-blocking)
+      checkVersion().catch(() => {
+        /* ignore */
+      });
+
       // Change to target directory
       process.chdir(targetPath);
 
